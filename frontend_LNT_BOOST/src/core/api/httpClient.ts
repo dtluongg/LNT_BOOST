@@ -1,8 +1,6 @@
 const API_BASE = '/api';
 
 let isRefreshing = false;
-
-// mảng chứa nhiều function callback
 let refreshSubscribers: ((token: string) => void)[] = [];
 
 function subscribeTokenRefresh(cb: (token: string) => void) {
@@ -13,6 +11,7 @@ function onRefreshed(token: string) {
   refreshSubscribers.forEach((cb) => cb(token));
   refreshSubscribers = [];
 }
+
 // Core apiFetch client helper with auto silent-refresh on 401
 export async function apiFetch<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
   const token = localStorage.getItem('auth_token');

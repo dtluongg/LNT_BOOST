@@ -1,0 +1,520 @@
+/* Sidebar.css - CSS giao diện các phần con bên trong Sidebar của hệ thống LNTBOOST EMS */
+
+.sidebar {
+  background-color: #f0f7ff !important;
+}
+
+/* 1. Modules Selection Tabs at Top */
+.modules-tabs {
+  display: flex;
+  padding: 10px;
+  gap: 8px;
+  border-bottom: 1px solid var(--border-color);
+  overflow-x: auto;
+}
+
+.module-tab-btn {
+  flex: 1;
+  padding: 10px 8px;
+  background-color: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition-smooth);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  min-width: 75px;
+}
+
+.module-tab-btn:hover {
+  background-color: var(--border-color);
+  color: white;
+}
+
+.module-tab-btn.active {
+  background-color: rgba(2, 132, 199, 0.15);
+  border-color: var(--primary-color);
+  color: var(--primary-hover);
+  box-shadow: 0 0 10px rgba(2, 132, 199, 0.1);
+}
+
+.sidebar-menu-list {
+  flex: 1;
+  padding: 16px 10px;
+}
+
+/* 2. Filter & Navigation Groups */
+.filter-section {
+  margin-bottom: 24px;
+}
+
+.filter-header {
+  font-size: 11px;
+  text-transform: uppercase;
+  color: var(--text-dark);
+  font-weight: 700;
+  letter-spacing: 1px;
+  margin-bottom: 10px;
+  padding-left: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.group-container {
+  margin-bottom: 8px;
+}
+
+.group-header {
+  width: 100%;
+  padding: 10px 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: none;
+  border: none;
+  color: var(--text-main);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: var(--transition-smooth);
+  text-align: left;
+}
+
+.group-header:hover {
+  background-color: var(--bg-tertiary);
+  color: var(--primary-color);
+}
+
+.group-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.functions-list {
+  padding-left: 12px;
+  margin-top: 4px;
+  border-left: 1px dashed var(--border-color);
+  margin-left: 14px;
+}
+
+.function-item {
+  width: 100%;
+  padding: 8px 10px;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 13px;
+  text-align: left;
+  cursor: pointer;
+  border-radius: 6px;
+  margin-bottom: 2px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: var(--transition-smooth);
+}
+
+.function-item:hover {
+  background-color: var(--bg-tertiary);
+  color: var(--primary-color);
+  padding-left: 14px;
+}
+
+.function-item.active {
+  background-color: rgba(2, 132, 199, 0.1);
+  color: var(--primary-hover);
+  font-weight: 500;
+}
+
+/* 3. Logo Box & Brand */
+.sidebar-logo-box {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 20px;
+  height: 64px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.logo-symbol {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, var(--primary-color), #0066cc);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.logo-text {
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  color: var(--text-main);
+}
+
+.sidebar-scrollable-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* 4. Search and Favorites List inside Sidebar */
+.sidebar-search-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: rgba(2, 132, 199, 0.05);
+  border: 1px solid rgba(2, 132, 199, 0.15);
+  border-radius: 6px;
+  padding: 6px 10px;
+  margin: 0 4px;
+}
+
+.sidebar-search-box input {
+  background: none;
+  border: none;
+  outline: none;
+  color: var(--text-main);
+  font-size: 12px;
+  width: 100%;
+}
+
+.sidebar-search-box input::placeholder {
+  color: var(--text-dark);
+}
+
+.favorites-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 0 4px;
+}
+
+.fav-item-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-radius: 6px;
+  padding-right: 4px;
+  transition: all 0.2s ease;
+}
+
+.fav-item-row:hover {
+  background-color: var(--bg-tertiary);
+}
+
+.fav-item-row.active {
+  background-color: rgba(2, 132, 199, 0.08);
+}
+
+.fav-item-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: none;
+  border: none;
+  padding: 8px;
+  color: var(--text-muted);
+  font-size: 13px;
+  cursor: pointer;
+  flex: 1;
+  text-align: left;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.fav-item-row.active .fav-item-btn {
+  color: var(--primary-hover);
+  font-weight: 500;
+}
+
+.star-toggle-btn {
+  background: none;
+  border: none;
+  color: var(--text-dark);
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.star-toggle-btn:hover {
+  color: var(--warning-color);
+  background-color: rgba(245, 158, 11, 0.08);
+}
+
+.star-toggle-btn.active {
+  color: var(--warning-color);
+}
+
+/* 5. Functions & Collapsed Tooltips */
+.function-item-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-radius: 6px;
+  padding-right: 4px;
+  margin-bottom: 2px;
+  transition: all 0.2s ease;
+}
+
+.function-item-row:hover {
+  background-color: var(--bg-tertiary);
+}
+
+.function-item-row.active {
+  background-color: rgba(2, 132, 199, 0.08);
+}
+
+.function-item-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: none;
+  border: none;
+  padding: 8px 10px;
+  color: var(--text-muted);
+  font-size: 13px;
+  cursor: pointer;
+  flex: 1;
+  text-align: left;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+}
+
+.function-item-row.active .function-item-btn {
+  color: var(--primary-hover);
+  font-weight: 500;
+}
+
+.collapsed-group-icon {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 8px;
+  color: var(--text-muted);
+  cursor: pointer;
+  margin: 0 auto 6px;
+  transition: all 0.2s ease;
+}
+
+.collapsed-group-icon:hover {
+  background-color: var(--bg-tertiary);
+  color: white;
+}
+
+.collapsed-group-icon.active {
+  background-color: rgba(2, 132, 199, 0.1);
+  color: var(--primary-hover);
+}
+
+.hover-tooltip-menu {
+  position: absolute;
+  left: 56px;
+  top: 0;
+  width: 220px;
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  box-shadow: var(--shadow-premium);
+  padding: 8px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+  transform: translateX(4px);
+  z-index: 200;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.collapsed-group-icon:hover .hover-tooltip-menu {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateX(0);
+}
+
+.tooltip-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-dark);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 4px 8px;
+  border-bottom: 1px solid var(--border-color);
+  margin-bottom: 4px;
+}
+
+.tooltip-func-item {
+  padding: 6px 8px;
+  font-size: 12px;
+  color: var(--text-muted);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+}
+
+.tooltip-func-item:hover {
+  background-color: var(--bg-tertiary);
+  color: white;
+}
+
+/* 6. Filter by Group at bottom */
+.sidebar-filter-by-group {
+  border-top: 1px solid var(--border-color);
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.filter-group-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: none;
+  border: none;
+  padding: 6px 8px;
+  color: var(--text-muted);
+  font-size: 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+}
+
+.filter-group-item:hover {
+  background-color: var(--bg-tertiary);
+  color: var(--primary-color);
+}
+
+.filter-group-item.active {
+  background-color: rgba(2, 132, 199, 0.08);
+  color: var(--primary-hover);
+  font-weight: 600;
+}
+
+.filter-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 16px;
+  border-radius: 10px;
+  padding: 0 6px;
+  font-size: 10px;
+  font-weight: 700;
+  color: white;
+}
+
+.badge-all {
+  background-color: #4b5563;
+}
+
+.badge-work {
+  background-color: var(--primary-color);
+}
+
+.badge-report {
+  background-color: #f59e0b;
+}
+
+.badge-setting {
+  background-color: #10b981;
+}
+
+/* 7. Collapse Button */
+.sidebar-collapse-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: none;
+  border: none;
+  border-top: 1px solid var(--border-color);
+  padding: 12px 20px;
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.sidebar-collapse-btn:hover {
+  color: var(--primary-color);
+  background-color: var(--bg-tertiary);
+}
+
+/* Focused Group Mode Sidebar Styles */
+.focused-group-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 0 4px;
+}
+
+.sidebar-group-back-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  color: var(--text-dark);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  padding: 4px 6px;
+  border-radius: 4px;
+  align-self: flex-start;
+  transition: all 0.2s ease;
+}
+
+.sidebar-group-back-btn:hover {
+  color: var(--primary-color);
+  background-color: rgba(2, 132, 199, 0.08);
+}
+
+.focused-group-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-main);
+  padding: 2px 8px;
+}
+
+.flat-list {
+  padding-left: 0 !important;
+  margin-left: 0 !important;
+  border-left: none !important;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
