@@ -1,0 +1,3 @@
+{
+  "GetMenuFunctionsByModule": "select b.ModuleMasterName, c.MenuGroupName, d.MenuFilterName, a.* from tblMenuFunctions a inner join tblModuleMaster b on b.ModuleMasterID=a.ModuleMasterID inner join tblMenuGroups c on c.ModuleMasterID=a.ModuleMasterID and c.MenuGroupID=a.MenuGroupID inner join tblMenuFilters d on d.MenuFilterID=a.MenuFilterID where a.ModuleMasterID = @ModuleId or (len(a.ModuleMasterID) = 5 and len(@ModuleId) = 4 and a.ModuleMasterID = stuff(@ModuleId, 3, 0, '0')) or (len(a.ModuleMasterID) = 4 and len(@ModuleId) = 5 and stuff(a.ModuleMasterID, 3, 0, '0') = @ModuleId)"
+}

@@ -1,0 +1,8 @@
+{
+  "GetCompanies": "select * from tblCompanyInformation",
+  "GetSites": "select * from tblCompanySiteInformation",
+  "GetModules": "select * from tblModuleMaster",
+  "GetMenuGroups": "select * from tblMenuGroups",
+  "GetMenuFilters": "select * from tblMenuFilters",
+  "GetUsers": "select * from tblMastUser"
+}
