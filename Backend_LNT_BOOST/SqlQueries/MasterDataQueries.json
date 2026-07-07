@@ -4,5 +4,6 @@
   "GetModules": "select * from tblModuleMaster",
   "GetMenuGroups": "select * from tblMenuGroups",
   "GetMenuFilters": "select * from tblMenuFilters",
-  "GetUsers": "select * from tblMastUser"
+  "GetUsers": "select * from tblMastUser",
+  "GetMenuFunctions": "select * from tblMenuFunctions"
 }

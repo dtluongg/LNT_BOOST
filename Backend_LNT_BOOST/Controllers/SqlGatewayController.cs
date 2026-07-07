@@ -1,4 +1,4 @@
-﻿using Dapper;
+using Dapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
@@ -30,7 +30,7 @@ namespace Backend_LNT_BOOST.Controllers
                 var queriesFolder = Path.Combine(Directory.GetCurrentDirectory(), "SqlQueries");
                 if (Directory.Exists(queriesFolder))
                 {
-                    var jsonFiles = Directory.GetFiles(queriesFolder, "*.json");
+                    var jsonFiles = Directory.GetFiles(queriesFolder, "*.json", SearchOption.AllDirectories);
                     foreach (var file in jsonFiles)
                     {
                         var fileContent = System.IO.File.ReadAllText(file);

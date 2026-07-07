@@ -1,19 +1,6 @@
-import { apiFetch } from '../core/api/httpClient';
-import type { 
-  User, 
-  SiteDto, 
-  ModuleDto, 
-  LoginResponse,
-  CompanyInfo,
-  SiteInfo,
-  MastUserInfo,
-  ModuleMasterInfo,
-  MenuGroupInfo,
-  MenuFunctionInfo,
-  MenuFilterInfo
-} from '../types';
+import { apiFetch } from '../../../../../core/api/httpClient';
 
-// Helper utility to automatically normalize PascalCase keys from Dapper SQL Gateway to camelCase frontend types
+// Helper utility to normalize PascalCase keys from Dapper SQL Gateway to camelCase frontend types
 function mapKeysToCamelCase(obj: any): any {
   if (Array.isArray(obj)) {
     return obj.map(mapKeysToCamelCase);
@@ -21,8 +8,8 @@ function mapKeysToCamelCase(obj: any): any {
     const newObj: any = {};
     for (const key of Object.keys(obj)) {
       let camelKey = key.charAt(0).toLowerCase() + key.slice(1);
-      
-      // Standardize suffix "Id" to "ID" to match types/index.ts
+
+      // Standardize suffix "Id" to "ID"
       if (camelKey.endsWith('Id') && camelKey !== 'isNewUser') {
         camelKey = camelKey.slice(0, -2) + 'ID';
       }
@@ -42,93 +29,7 @@ function mapKeysToCamelCase(obj: any): any {
   return obj;
 }
 
-// Simplified central API service
-export const apiService = {
-  // --- AUTHENTICATION ---
-  login: async (username: string, password: string): Promise<LoginResponse> => {
-    const raw = await apiFetch<any>('/auth/login', {
-      method: 'POST',
-      body: JSON.stringify({ username, password }),
-    });
-    return mapKeysToCamelCase(raw) as LoginResponse;
-  },
-
-  resetPassword: async (username: string, newPassword: string): Promise<{ message: string }> => {
-    return apiFetch<{ message: string }>('/auth/reset-password', {
-      method: 'POST',
-      body: JSON.stringify({ username, newPassword }),
-    });
-  },
-
-  // --- SQL GATEWAY GENERIC QUERIES ---
-  getCompanies: async (): Promise<CompanyInfo[]> => {
-    const raw = await apiFetch<any[]>('/SqlGateway/query', {
-      method: 'POST',
-      body: JSON.stringify({ queryName: 'GetCompanies' })
-    });
-    return mapKeysToCamelCase(raw);
-  },
-
-  getSites: async (): Promise<SiteInfo[]> => {
-    const raw = await apiFetch<any[]>('/SqlGateway/query', {
-      method: 'POST',
-      body: JSON.stringify({ queryName: 'GetSites' })
-    });
-    return mapKeysToCamelCase(raw);
-  },
-
-  getUsers: async (): Promise<MastUserInfo[]> => {
-    const raw = await apiFetch<any[]>('/SqlGateway/query', {
-      method: 'POST',
-      body: JSON.stringify({ queryName: 'GetUsers' })
-    });
-    return mapKeysToCamelCase(raw);
-  },
-
-  getModules: async (): Promise<ModuleMasterInfo[]> => {
-    const raw = await apiFetch<any[]>('/SqlGateway/query', {
-      method: 'POST',
-      body: JSON.stringify({ queryName: 'GetModules' })
-    });
-    return mapKeysToCamelCase(raw);
-  },
-
-  getMenuGroups: async (): Promise<MenuGroupInfo[]> => {
-    const raw = await apiFetch<any[]>('/SqlGateway/query', {
-      method: 'POST',
-      body: JSON.stringify({ queryName: 'GetMenuGroups' })
-    });
-    return mapKeysToCamelCase(raw);
-  },
-
-  getMenuFunctions: async (): Promise<MenuFunctionInfo[]> => {
-    const raw = await apiFetch<any[]>('/SqlGateway/query', {
-      method: 'POST',
-      body: JSON.stringify({ queryName: 'GetMenuFunctions' })
-    });
-    return mapKeysToCamelCase(raw);
-  },
-
-  getMenuFilters: async (): Promise<MenuFilterInfo[]> => {
-    const raw = await apiFetch<any[]>('/SqlGateway/query', {
-      method: 'POST',
-      body: JSON.stringify({ queryName: 'GetMenuFilters' })
-    });
-    return mapKeysToCamelCase(raw);
-  },
-
-  getMenuByModule: async (moduleId: string): Promise<MenuFunctionInfo[]> => {
-    const raw = await apiFetch<any[]>('/SqlGateway/query', {
-      method: 'POST',
-      body: JSON.stringify({
-        queryName: 'GetMenuFunctionsByModule',
-        parameters: { ModuleId: moduleId }
-      })
-    });
-    return mapKeysToCamelCase(raw);
-  },
-
-  // --- VENDORS SCM MODULE ---
+export const vendorApi = {
   getVendors: async (): Promise<any[]> => {
     const raw = await apiFetch<any[]>('/SqlGateway/query', {
       method: 'POST',
@@ -255,5 +156,42 @@ export const apiService = {
         }
       })
     });
+  },
+
+  // deleteVendor: async (vendor: any): Promise<any> => {
+  //   return apiFetch<any>('/SqlGateway/query', {
+  //     method: 'POST',
+  //     body: JSON.stringify({
+  //       queryName: 'DeleteVendor',
+  //       parameters: {
+  //         VendorID: vendor.vendorID,
+  //       }
+  //     })
+  //   });
+  // }
+
+
+   // Lấy danh sách địa điểm của Vendor
+  getShipperLocations: async (vendorID: string): Promise<any[]> => {
+    const raw = await apiFetch<any[]>('/SqlGateway/query', {
+      method: 'POST',
+      body: JSON.stringify({
+        queryName: 'GetShipperLocations',
+        parameters: { VendorID: vendorID }
+      })
+    });
+    return mapKeysToCamelCase(raw);
+  },
+  // Lưu địa điểm (Thêm mới/Cập nhật)
+  saveShipperLocation: async (location: any): Promise<any> => {
+    return apiFetch<any>('/SqlGateway/query', {
+      method: 'POST',
+      body: JSON.stringify({
+        queryName: location.locationID ? 'UpdateShipperLocation' : 'CreateShipperLocation',
+        parameters: { ...location }
+      })
+    });
   }
+
+
 };

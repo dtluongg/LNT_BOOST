@@ -11,17 +11,17 @@ import SiteSelectionScreen from './features/auth/SiteSelectionScreen';
 import DashboardOverview from './features/dashboard/DashboardOverview';
 import SystemDataView from './features/system-db/SystemDataView';
 import PurchaseOrderView from './features/scm/PurchaseOrderView';
-import VendorMasterView from './features/scm/VendorMasterView';
+import VendorMasterView from './views/MD2_SCM/Supplier_Management/Master_Data/Vendor_Master/VendorMasterView';
 import MenuPortalModal from './components/MenuPortalModal';
 
 // Imports types
-import type { 
-  User, 
-  SiteDto, 
-  ModuleDto, 
-  MenuGroupInfo, 
-  MenuFunctionInfo, 
-  MenuFilterInfo 
+import type {
+  User,
+  SiteDto,
+  ModuleDto,
+  MenuGroupInfo,
+  MenuFunctionInfo,
+  MenuFilterInfo
 } from './types';
 
 export default function App() {
@@ -51,7 +51,7 @@ export default function App() {
   );
   const [selectedMenuGroupID, setSelectedMenuGroupID] = useState<number | null>(null);
   const [showMenuPortalModal, setShowMenuPortalModal] = useState<boolean>(false);
-  
+
   // Menu metadata loaded from DB
   const [allMenuGroups, setAllMenuGroups] = useState<MenuGroupInfo[]>([]);
   const [allMenuFunctions, setAllMenuFunctions] = useState<MenuFunctionInfo[]>([]);
@@ -161,7 +161,7 @@ export default function App() {
     setLoginLoading(true);
     try {
       const res = await apiService.login(username, password);
-      
+
       // Save local storage
       localStorage.setItem('auth_token', res.token);
       localStorage.setItem('auth_refresh_token', res.refreshToken || '');
@@ -176,7 +176,7 @@ export default function App() {
       setAuthorizedSites(res.authorizedSites);
       setAuthorizedModules(res.authorizedModules);
       setIsSiteConfirmed(false);
-      
+
       if (res.authorizedSites.length > 0) {
         const defaultSite = res.user.defaultCompanyID && res.authorizedSites.some(s => s.companySiteID === res.user.defaultCompanyID)
           ? res.user.defaultCompanyID
@@ -285,9 +285,9 @@ export default function App() {
   };
 
   const handleToggleFavorite = (funcId: string) => {
-    setFavorites(prev => 
-      prev.includes(funcId) 
-        ? prev.filter(id => id !== funcId) 
+    setFavorites(prev =>
+      prev.includes(funcId)
+        ? prev.filter(id => id !== funcId)
         : [...prev, funcId]
     );
   };
@@ -342,13 +342,13 @@ export default function App() {
   return (
     <div className="app-container">
       {!token ? (
-        <LoginScreen 
+        <LoginScreen
           onLoginSubmit={handleLoginSubmit}
           loginLoading={loginLoading}
           loginError={loginError}
         />
       ) : !isSiteConfirmed ? (
-        <SiteSelectionScreen 
+        <SiteSelectionScreen
           currentUser={currentUser}
           authorizedSites={authorizedSites}
           authorizedModules={authorizedModules}
@@ -357,7 +357,7 @@ export default function App() {
         />
       ) : (
         <div className="portal-container">
-          <Sidebar 
+          <Sidebar
             selectedModuleID={selectedModuleID}
             activeModuleName={activeModuleName}
             moduleGroups={moduleGroups}
@@ -378,9 +378,9 @@ export default function App() {
             selectedMenuGroupID={selectedMenuGroupID}
             onSelectMenuGroup={setSelectedMenuGroupID}
           />
-          
+
           <div className="portal-main">
-            <Header 
+            <Header
               currentUser={currentUser}
               activeSiteName={activeSiteName}
               selectedModuleID={selectedModuleID}
@@ -395,7 +395,7 @@ export default function App() {
             {/* WORKSPACE TABS BAR */}
             <div className="workspace-tabs-bar">
               {/* Permanent Dashboard Tab */}
-              <button 
+              <button
                 className={`workspace-tab-item ${activeViewId === null ? 'active' : ''}`}
                 onClick={() => handleSelectTab(null)}
               >
@@ -407,8 +407,8 @@ export default function App() {
               {workspaceTabs.map(tab => {
                 const isActive = activeViewId === tab.id;
                 return (
-                  <div 
-                    key={tab.id} 
+                  <div
+                    key={tab.id}
                     className={`workspace-tab-item ${isActive ? 'active' : ''}`}
                     onClick={() => handleSelectTab(tab.id)}
                   >
@@ -418,11 +418,11 @@ export default function App() {
                       <FileText size={13} style={{ color: 'var(--primary-color)' }} />
                     )}
                     <span>{tab.name}</span>
-                    <button 
-                      className="tab-close-btn" 
-                      onClick={(e) => { 
-                        e.stopPropagation(); 
-                        handleCloseTab(tab.id); 
+                    <button
+                      className="tab-close-btn"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleCloseTab(tab.id);
                       }}
                       title="Đóng tab"
                     >
@@ -434,7 +434,7 @@ export default function App() {
             </div>
 
             {showMenuPortalModal && (
-              <MenuPortalModal 
+              <MenuPortalModal
                 isOpen={showMenuPortalModal}
                 onClose={() => setShowMenuPortalModal(false)}
                 activeModuleName={activeModuleName}
@@ -463,7 +463,7 @@ export default function App() {
                 <div className="workspace-title">
                   <h1>{activeViewId ? activeViewName : 'Hệ Thống LNTBOOST EMS'}</h1>
                   <p>
-                    {activeViewId 
+                    {activeViewId
                       ? `${activeViewId.startsWith('sys_') ? 'Bảng Cơ sở dữ liệu gốc' : `Chức năng nghiệp vụ Phân hệ ${selectedModuleID}`} tại ${activeSiteName}`
                       : `Chào mừng bạn, ${currentUser?.fullName || currentUser?.username}. Chọn tính năng để làm việc.`
                     }
@@ -473,14 +473,14 @@ export default function App() {
 
               {/* ROUTE RENDERING */}
               {!activeViewId ? (
-                <DashboardOverview 
+                <DashboardOverview
                   currentUser={currentUser}
                   authorizedSites={authorizedSites}
                   siteModules={siteModules}
                   activeSiteName={activeSiteName}
                 />
               ) : activeViewId.startsWith('sys_') ? (
-                <SystemDataView 
+                <SystemDataView
                   tableId={activeViewId}
                   tableName={activeViewName}
                   currentUser={currentUser}
@@ -492,7 +492,7 @@ export default function App() {
               ) : (
                 <div style={{ padding: '40px', border: '1px dashed var(--border-color)', borderRadius: '12px', textAlign: 'center' }}>
                   <div style={{ fontSize: '32px', marginBottom: '12px' }}>⚙️</div>
-                  <h3 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '8px' }}>Chức năng: {activeViewName}</h3>
+                  <h3 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '8px' }}>Chức năng: {activeViewName} (ID: {activeViewId})</h3>
                   <p style={{ color: 'var(--text-muted)', fontSize: '14px', maxWidth: '480px', margin: '0 auto', lineHeight: '1.6' }}>
                     Giao diện của chức năng này thuộc nhóm bộ lọc <strong>{allMenuFilters.find(f => f.menuFilterID === activeMenuFilterID)?.menuFilterName || 'Chức năng'}</strong> đang được phát triển. Dữ liệu sẽ được kết nối tới API của phân hệ {selectedModuleID}.
                   </p>
