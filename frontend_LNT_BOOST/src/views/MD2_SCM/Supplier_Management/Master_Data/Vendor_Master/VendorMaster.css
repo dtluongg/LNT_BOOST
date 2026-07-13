@@ -150,3 +150,61 @@
   height: 15px;
   cursor: pointer;
 }
+
+/* Print styles for clean report generation */
+@media print {
+  /* Hide all main elements */
+  body *, .app-container *, .portal-container *, .portal-main * {
+    visibility: hidden;
+  }
+  
+  /* Show only active workspace content */
+  .workspace, .workspace * {
+    visibility: visible;
+  }
+  
+  /* Adjust workspace layout for printing */
+  .workspace {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    background: white;
+    color: black;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+  
+  /* Hide headers, breadcrumbs, sidebar collapses, and action buttons */
+  .header, 
+  .sidebar, 
+  .workspace-tabs-bar, 
+  .workspace-breadcrumb,
+  .workspace-header,
+  button, 
+  .btn-primary, 
+  .btn-secondary, 
+  .btn-success, 
+  input[type="text"]::placeholder,
+  .search-bar-icon,
+  .print-dropdown-menu {
+    display: none !important;
+  }
+  
+  /* Ensure form borders look nice and text is visible */
+  .erp-card {
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+  }
+  
+  .erp-input:disabled,
+  .erp-select:disabled,
+  .erp-textarea:disabled {
+    background-color: transparent !important;
+    border: none !important;
+    border-bottom: 1px dashed #ccc !important;
+    color: black !important;
+    padding: 2px 0 !important;
+  }
+}

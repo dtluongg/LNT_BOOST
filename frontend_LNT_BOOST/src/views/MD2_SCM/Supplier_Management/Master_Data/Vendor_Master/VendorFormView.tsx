@@ -8,7 +8,9 @@ import {
   UserCheck,
   Globe,
   MapPin,
-  CreditCard
+  CreditCard,
+  Printer,
+  ChevronDown
 } from 'lucide-react';
 
 interface VendorFormViewProps {
@@ -45,6 +47,48 @@ export default function VendorFormView({
   shipperLocations = []
 }: VendorFormViewProps) {
   const isView = formMode === 'view';
+  const [showPrintMenu, setShowPrintMenu] = React.useState(false);
+
+  const handlePrintPDF = () => {
+    window.print();
+  };
+
+  const handleExportExcel = () => {
+    const headers = ['Field', 'Value'];
+    const rows = [
+      ['Vendor ID', formData.vendorID],
+      ['Vendor Code', formData.vendorCode],
+      ['Vendor Name', formData.vendorName],
+      ['Status', formData.activeFlag ? 'Active' : 'Inactive'],
+      ['Company Name', formData.companyName || ''],
+      ['Phone No', formData.phoneNo || ''],
+      ['Fax', formData.fax || ''],
+      ['Website', formData.web || ''],
+      ['Address Line 1', formData.addressLine1 || ''],
+      ['Address Line 2', formData.addressLine2 || ''],
+      ['City', formData.city || ''],
+      ['Province', formData.province || ''],
+      ['Postal Code', formData.postalCode || ''],
+      ['Country', formData.country || ''],
+      ['Contact Person Name', formData.contactPersonName || ''],
+      ['Contact Email', formData.contactEmail || ''],
+      ['Contact Phone', formData.contactPhone1 || ''],
+      ['Vendor Class', formData.vendorClass || ''],
+      ['Currency', formData.currency || ''],
+      ['Payment Term', formData.paymentTerm || '']
+    ];
+    
+    const csvContent = "\uFEFF" + [headers.join(','), ...rows.map(e => e.map(val => `"${val.toString().replace(/"/g, '""')}"`).join(','))].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", `vendor_${formData.vendorCode || formData.vendorID}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
 
   return (
     <form className="erp-form-container fade-in" onSubmit={(e) => {
@@ -117,6 +161,80 @@ export default function VendorFormView({
             <Save size={13} />
             <span>Save</span>
           </button>
+
+          <div style={{ position: 'relative' }}>
+            <button
+              type="button"
+              className="btn-secondary"
+              onClick={() => setShowPrintMenu(!showPrintMenu)}
+              style={{ padding: '4px 10px', display: 'flex', alignItems: 'center', gap: '4px', height: '28px', fontSize: '12px' }}
+            >
+              <Printer size={13} />
+              <span>Print / Export</span>
+              <ChevronDown size={10} />
+            </button>
+            {showPrintMenu && (
+              <div className="print-dropdown-menu" style={{
+                position: 'absolute',
+                top: '32px',
+                left: 0,
+                backgroundColor: 'var(--bg-secondary)',
+                border: '1px solid var(--border-color)',
+                borderRadius: '6px',
+                boxShadow: 'var(--shadow-premium)',
+                zIndex: 100,
+                width: '180px',
+                display: 'flex',
+                flexDirection: 'column',
+                padding: '4px 0'
+              }}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    handlePrintPDF();
+                    setShowPrintMenu(false);
+                  }}
+                  style={{
+                    padding: '8px 12px',
+                    textAlign: 'left',
+                    background: 'none',
+                    border: 'none',
+                    cursor: 'pointer',
+                    fontSize: '12px',
+                    color: 'var(--text-main)',
+                    display: 'block',
+                    width: '100%'
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--bg-tertiary)'}
+                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                >
+                  📄 In ra PDF / Print (A4)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    handleExportExcel();
+                    setShowPrintMenu(false);
+                  }}
+                  style={{
+                    padding: '8px 12px',
+                    textAlign: 'left',
+                    background: 'none',
+                    border: 'none',
+                    cursor: 'pointer',
+                    fontSize: '12px',
+                    color: 'var(--text-main)',
+                    display: 'block',
+                    width: '100%'
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--bg-tertiary)'}
+                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                >
+                  🟢 Xuất file Excel (.csv)
+                </button>
+              </div>
+            )}
+          </div>
         </div>
 
         <div style={{ fontSize: '12px', fontWeight: '600' }}>

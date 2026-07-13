@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, lazy, Suspense } from 'react';
+import { BrowserRouter, Routes, Route, useNavigate, useLocation, Navigate, useParams } from 'react-router-dom';
 import './App.css';
 import { apiService } from './services/api';
 import { X, Database, FileText, LayoutGrid } from 'lucide-react';
@@ -8,11 +9,13 @@ import Header from './layouts/Header';
 import Sidebar from './layouts/Sidebar';
 import LoginScreen from './features/auth/LoginScreen';
 import SiteSelectionScreen from './features/auth/SiteSelectionScreen';
-import DashboardOverview from './features/dashboard/DashboardOverview';
-import SystemDataView from './features/system-db/SystemDataView';
-import PurchaseOrderView from './features/scm/PurchaseOrderView';
-import VendorMasterView from './views/MD2_SCM/Supplier_Management/Master_Data/Vendor_Master/VendorMasterView';
 import MenuPortalModal from './components/MenuPortalModal';
+
+// Lazy loaded views
+const DashboardOverview = lazy(() => import('./features/dashboard/DashboardOverview'));
+const SystemDataView = lazy(() => import('./features/system-db/SystemDataView'));
+const PurchaseOrderView = lazy(() => import('./features/scm/PurchaseOrderView'));
+const VendorMasterView = lazy(() => import('./views/MD2_SCM/Supplier_Management/Master_Data/Vendor_Master/VendorMasterView'));
 
 // Imports types
 import type {
@@ -24,7 +27,108 @@ import type {
   MenuFilterInfo
 } from './types';
 
-export default function App() {
+// Utility to convert text to URL slug
+const slugify = (text: string): string => {
+  return text
+    .toString()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '') // Remove accents
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, '-') // Replace spaces with -
+    .replace(/[^\w\-]+/g, '') // Remove all non-word chars
+    .replace(/\-\-+/g, '-'); // Replace multiple - with single -
+};
+
+// System Tables definition matching Sidebar.tsx
+const SYSTEM_TABLES = [
+  { id: 'sys_company', name: 'tblCompanyInformation', label: 'Tổng Công Ty' },
+  { id: 'sys_site', name: 'tblCompanySiteInformation', label: 'Chi Nhánh / Sites' },
+  { id: 'sys_user', name: 'tblMastUser', label: 'Tài Khoản / Users' },
+  { id: 'sys_module', name: 'tblModuleMaster', label: 'Phân Hệ / Modules' },
+  { id: 'sys_menu_group', name: 'tblMenuGroups', label: 'Nhóm Menu' },
+  { id: 'sys_menu_func', name: 'tblMenuFunctions', label: 'Chức Năng Chi Tiết' },
+  { id: 'sys_menu_filter', name: 'tblMenuFilters', label: 'Bộ Lọc Phân Loại' }
+];
+
+// Loading spinner component for Suspense
+const RouteLoading = () => (
+  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '300px', gap: '16px' }}>
+    <div style={{
+      width: '36px',
+      height: '36px',
+      border: '3px solid var(--border-color)',
+      borderTopColor: 'var(--primary-color)',
+      borderRadius: '50%',
+      animation: 'spin 0.8s linear infinite'
+    }} />
+    <span style={{ color: 'var(--text-muted)', fontSize: '13px' }}>Đang tải giao diện...</span>
+  </div>
+);
+
+function SystemDataViewWrapper({ currentUser }: { currentUser: User | null }) {
+  const { tableId } = useParams<{ tableId: string }>();
+  const table = SYSTEM_TABLES.find(t => t.id === tableId);
+  const tableName = table ? table.name : tableId || '';
+  return <SystemDataView tableId={tableId || ''} tableName={tableName} currentUser={currentUser} />;
+}
+
+interface FunctionViewWrapperProps {
+  allMenuFilters: MenuFilterInfo[];
+  selectedModuleID: string | null;
+  activeSiteName: string;
+  activeViewName: string;
+  activeMenuFilterID: number | null;
+  allMenuFunctions: MenuFunctionInfo[];
+}
+
+function FunctionViewWrapper({
+  allMenuFilters,
+  selectedModuleID,
+  activeSiteName,
+  activeViewName,
+  activeMenuFilterID,
+  allMenuFunctions
+}: FunctionViewWrapperProps) {
+  const { funcSlug } = useParams<{ funcSlug: string }>();
+  
+  // Find function by slug
+  const func = allMenuFunctions.find(f => slugify(f.menuFunctionName) === funcSlug);
+  
+  if (!func) {
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '300px', gap: '12px' }}>
+        <div style={{ fontSize: '32px' }}>⚠️</div>
+        <h3 style={{ fontSize: '16px', fontWeight: '600' }}>Chức năng không tồn tại hoặc đang tải...</h3>
+      </div>
+    );
+  }
+  
+  const funcIdStr = func.menuFunctionID.toString();
+  
+  if (funcIdStr === '115') {
+    return <PurchaseOrderView />;
+  }
+  
+  if (funcIdStr === '301') {
+    return <VendorMasterView />;
+  }
+  
+  return (
+    <div style={{ padding: '40px', border: '1px dashed var(--border-color)', borderRadius: '12px', textAlign: 'center' }}>
+      <div style={{ fontSize: '32px', marginBottom: '12px' }}>⚙️</div>
+      <h3 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '8px' }}>Chức năng: {func.menuFunctionName} (ID: {func.menuFunctionID})</h3>
+      <p style={{ color: 'var(--text-muted)', fontSize: '14px', maxWidth: '480px', margin: '0 auto', lineHeight: '1.6' }}>
+        Giao diện của chức năng này thuộc nhóm bộ lọc <strong>{allMenuFilters.find(f => f.menuFilterID === func.menuFilterID)?.menuFilterName || 'Chức năng'}</strong> đang được phát triển. Dữ liệu sẽ được kết nối tới API của phân hệ {selectedModuleID}.
+      </p>
+    </div>
+  );
+}
+
+function AppContent() {
+  const navigate = useNavigate();
+  const location = useLocation();
+
   // State Authentication
   const [token, setToken] = useState<string | null>(localStorage.getItem('auth_token'));
   const [currentUser, setCurrentUser] = useState<User | null>(
@@ -120,41 +224,83 @@ export default function App() {
         setSelectedModuleID(null);
         localStorage.removeItem('selected_module_id');
       }
-      setActiveViewId(null);
-      setActiveViewName('Tổng quan');
       setSelectedMenuGroupID(null);
     }
   }, [selectedSiteID, authorizedModules]);
 
   const loadMenuMetadata = async () => {
     try {
-      const [groups, filters] = await Promise.all([
+      const [groups, filters, funcs] = await Promise.all([
         apiService.getMenuGroups(),
-        apiService.getMenuFilters()
+        apiService.getMenuFilters(),
+        apiService.getMenuFunctions()
       ]);
       setAllMenuGroups(groups);
       setAllMenuFilters(filters);
+      setAllMenuFunctions(funcs);
     } catch (err) {
       console.error('Không thể tải cấu trúc menu từ database:', err);
     }
   };
 
-  // Tải danh sách chức năng lọc theo Phân hệ bằng SQL Gateway (Dapper)
+  // Sync URL changes to workspace tabs
   useEffect(() => {
-    if (token && selectedModuleID) {
-      const loadModuleFunctions = async () => {
-        try {
-          const funcs = await apiService.getMenuByModule(selectedModuleID);
-          setAllMenuFunctions(funcs);
-        } catch (err) {
-          console.error('Không thể tải danh sách chức năng cho phân hệ:', err);
+    if (!token || !isSiteConfirmed) return;
+
+    const matchFunc = location.pathname.match(/^\/function\/([^/]+)/);
+    const matchSysDb = location.pathname.match(/^\/sys-db\/([^/]+)/);
+
+    if (matchFunc) {
+      const funcSlug = matchFunc[1];
+      const func = allMenuFunctions.find(f => slugify(f.menuFunctionName) === funcSlug);
+      if (func) {
+        const funcId = func.menuFunctionID.toString();
+        // Automatically switch module if it matches another module
+        if (selectedModuleID && !matchModuleID(func.moduleMasterID, selectedModuleID)) {
+          setSelectedModuleID(func.moduleMasterID);
+          localStorage.setItem('selected_module_id', func.moduleMasterID);
         }
-      };
-      loadModuleFunctions();
-    } else {
-      setAllMenuFunctions([]);
+
+        if (!workspaceTabs.some(t => t.id === funcId)) {
+          setWorkspaceTabs(prev => [...prev, { id: funcId, name: func.menuFunctionName, type: 'function' }]);
+        }
+        setActiveViewId(funcId);
+        setActiveViewName(func.menuFunctionName);
+        setActiveMenuFilterID(func.menuFilterID);
+        setSelectedMenuGroupID(func.menuGroupID);
+      }
+    } else if (matchSysDb) {
+      const tableId = matchSysDb[1];
+      const systemTable = SYSTEM_TABLES.find(t => t.id === tableId);
+      const tableName = systemTable ? systemTable.name : tableId;
+
+      if (!workspaceTabs.some(t => t.id === tableId)) {
+        setWorkspaceTabs(prev => [...prev, { id: tableId, name: tableName, type: 'table' }]);
+      }
+      setActiveViewId(tableId);
+      setActiveViewName(tableName);
+    } else if (location.pathname === '/' || location.pathname === '/dashboard') {
+      setActiveViewId(null);
+      setActiveViewName('Tổng quan');
     }
-  }, [token, selectedModuleID]);
+  }, [location.pathname, allMenuFunctions, token, isSiteConfirmed]);
+
+  // Sync URL with Authentication / Site Selection state
+  useEffect(() => {
+    if (!token) {
+      if (location.pathname !== '/login') {
+        navigate('/login', { replace: true });
+      }
+    } else if (!isSiteConfirmed) {
+      if (location.pathname !== '/site-selection') {
+        navigate('/site-selection', { replace: true });
+      }
+    } else {
+      if (location.pathname === '/login' || location.pathname === '/site-selection') {
+        navigate('/', { replace: true });
+      }
+    }
+  }, [token, isSiteConfirmed, location.pathname, navigate]);
 
   const handleLoginSubmit = async (username: string, password: string) => {
     setLoginError(null);
@@ -184,6 +330,8 @@ export default function App() {
         setSelectedSiteID(defaultSite);
         localStorage.setItem('selected_site_id', defaultSite);
       }
+      
+      navigate('/site-selection');
     } catch (err: any) {
       setLoginError(err.message || 'Sai tên đăng nhập hoặc mật khẩu.');
     } finally {
@@ -202,6 +350,7 @@ export default function App() {
     setWorkspaceTabs([]);
     setActiveViewId(null);
     setIsSiteConfirmed(false);
+    navigate('/login');
   };
 
   const handleConfirmSite = (siteId: string, moduleId: string) => {
@@ -211,6 +360,7 @@ export default function App() {
     localStorage.setItem('selected_site_id', siteId);
     localStorage.setItem('selected_module_id', moduleId);
     localStorage.setItem('is_site_confirmed', 'true');
+    navigate('/');
   };
 
   const handleBackToLogin = () => {
@@ -222,8 +372,9 @@ export default function App() {
     setWorkspaceTabs([]);
     setActiveViewId(null);
     setActiveViewName('Tổng quan');
-    setActiveFilterID(null); // Reset filter when module changes
-    setShowLiveDbMenu(false); // Close Live DB menu when switching module
+    setActiveFilterID(null);
+    setShowLiveDbMenu(false);
+    navigate('/');
   };
 
   const handleToggleGroup = (groupId: string) => {
@@ -232,25 +383,13 @@ export default function App() {
       [groupId]: !prev[groupId]
     }));
   };
+
   const handleSelectFunction = (func: MenuFunctionInfo) => {
-    const tabId = func.menuFunctionID.toString();
-    if (!workspaceTabs.some(t => t.id === tabId)) {
-      setWorkspaceTabs(prev => [...prev, { id: tabId, name: func.menuFunctionName, type: 'function' }]);
-    }
-    setActiveViewId(tabId);
-    setActiveViewName(func.menuFunctionName);
-    setActiveMenuFilterID(func.menuFilterID);
-    setSelectedMenuGroupID(func.menuGroupID); // Focus sidebar on this group
-    setActiveFilterID(null); // Show all functions in this group (no filter)
-    setShowLiveDbMenu(false); // Close Live DB menu when selecting regular function
+    navigate(`/function/${slugify(func.menuFunctionName)}`);
   };
 
   const handleSelectSystemTable = (tableId: string, tableName: string) => {
-    if (!workspaceTabs.some(t => t.id === tableId)) {
-      setWorkspaceTabs(prev => [...prev, { id: tableId, name: tableName, type: 'table' }]);
-    }
-    setActiveViewId(tableId);
-    setActiveViewName(tableName);
+    navigate(`/sys-db/${tableId}`);
   };
 
   const handleCloseTab = (tabId: string) => {
@@ -262,24 +401,38 @@ export default function App() {
       if (updatedTabs.length > 0) {
         const nextIndex = Math.min(tabIndex, updatedTabs.length - 1);
         const nextTab = updatedTabs[nextIndex];
-        setActiveViewId(nextTab.id);
-        setActiveViewName(nextTab.name);
+        if (nextTab.type === 'table') {
+          navigate(`/sys-db/${nextTab.id}`);
+        } else {
+          const nextFunc = allMenuFunctions.find(f => f.menuFunctionID.toString() === nextTab.id);
+          if (nextFunc) {
+            navigate(`/function/${slugify(nextFunc.menuFunctionName)}`);
+          } else {
+            navigate('/');
+          }
+        }
       } else {
-        setActiveViewId(null);
-        setActiveViewName('Tổng quan');
+        navigate('/');
       }
     }
   };
 
   const handleSelectTab = (tabId: string | null) => {
     if (tabId === null) {
-      setActiveViewId(null);
-      setActiveViewName('Tổng quan');
+      navigate('/');
     } else {
       const tab = workspaceTabs.find(t => t.id === tabId);
       if (tab) {
-        setActiveViewId(tab.id);
-        setActiveViewName(tab.name);
+        if (tab.type === 'table') {
+          navigate(`/sys-db/${tab.id}`);
+        } else {
+          const func = allMenuFunctions.find(f => f.menuFunctionID.toString() === tab.id);
+          if (func) {
+            navigate(`/function/${slugify(func.menuFunctionName)}`);
+          } else {
+            navigate('/');
+          }
+        }
       }
     }
   };
@@ -300,16 +453,9 @@ export default function App() {
     setShowLiveDbMenu(prev => {
       const nextVal = !prev;
       if (nextVal) {
-        const tabId = 'sys_company';
-        const tabName = 'tblCompanyInformation';
-        if (!workspaceTabs.some(t => t.id === tabId)) {
-          setWorkspaceTabs(prevTabs => [...prevTabs, { id: tabId, name: tabName, type: 'table' }]);
-        }
-        setActiveViewId(tabId);
-        setActiveViewName(tabName);
+        navigate('/sys-db/sys_company');
       } else {
-        setActiveViewId(null);
-        setActiveViewName('Tổng quan');
+        navigate('/');
       }
       return nextVal;
     });
@@ -385,7 +531,10 @@ export default function App() {
               activeSiteName={activeSiteName}
               selectedModuleID={selectedModuleID}
               activeModuleName={activeModuleName}
-              onBackToSiteSelection={() => setIsSiteConfirmed(false)}
+              onBackToSiteSelection={() => {
+                setIsSiteConfirmed(false);
+                navigate('/site-selection');
+              }}
               onLogout={handleLogout}
               onOpenLiveDb={handleToggleLiveDbMenu}
               showLiveDbMenu={showLiveDbMenu}
@@ -472,36 +621,52 @@ export default function App() {
               </div>
 
               {/* ROUTE RENDERING */}
-              {!activeViewId ? (
-                <DashboardOverview
-                  currentUser={currentUser}
-                  authorizedSites={authorizedSites}
-                  siteModules={siteModules}
-                  activeSiteName={activeSiteName}
-                />
-              ) : activeViewId.startsWith('sys_') ? (
-                <SystemDataView
-                  tableId={activeViewId}
-                  tableName={activeViewName}
-                  currentUser={currentUser}
-                />
-              ) : activeViewId === '115' ? (
-                <PurchaseOrderView />
-              ) : activeViewId === '301' ? (
-                <VendorMasterView />
-              ) : (
-                <div style={{ padding: '40px', border: '1px dashed var(--border-color)', borderRadius: '12px', textAlign: 'center' }}>
-                  <div style={{ fontSize: '32px', marginBottom: '12px' }}>⚙️</div>
-                  <h3 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '8px' }}>Chức năng: {activeViewName} (ID: {activeViewId})</h3>
-                  <p style={{ color: 'var(--text-muted)', fontSize: '14px', maxWidth: '480px', margin: '0 auto', lineHeight: '1.6' }}>
-                    Giao diện của chức năng này thuộc nhóm bộ lọc <strong>{allMenuFilters.find(f => f.menuFilterID === activeMenuFilterID)?.menuFilterName || 'Chức năng'}</strong> đang được phát triển. Dữ liệu sẽ được kết nối tới API của phân hệ {selectedModuleID}.
-                  </p>
-                </div>
-              )}
+              <Suspense fallback={<RouteLoading />}>
+                <Routes>
+                  <Route path="/" element={
+                    <DashboardOverview
+                      currentUser={currentUser}
+                      authorizedSites={authorizedSites}
+                      siteModules={siteModules}
+                      activeSiteName={activeSiteName}
+                    />
+                  } />
+                  <Route path="dashboard" element={
+                    <DashboardOverview
+                      currentUser={currentUser}
+                      authorizedSites={authorizedSites}
+                      siteModules={siteModules}
+                      activeSiteName={activeSiteName}
+                    />
+                  } />
+                  <Route path="sys-db/:tableId" element={
+                    <SystemDataViewWrapper currentUser={currentUser} />
+                  } />
+                  <Route path="function/:funcSlug" element={
+                    <FunctionViewWrapper
+                      allMenuFilters={allMenuFilters}
+                      selectedModuleID={selectedModuleID}
+                      activeSiteName={activeSiteName}
+                      activeViewName={activeViewName}
+                      activeMenuFilterID={activeMenuFilterID}
+                      allMenuFunctions={allMenuFunctions}
+                    />
+                  } />
+                  <Route path="*" element={<Navigate to="/" replace />} />
+                </Routes>
+              </Suspense>
             </main>
           </div>
         </div>
       )}
     </div>
+  );
+}
+
+export default function App() {
+  return (
+    <BrowserRouter>
+      <AppContent />
+    </BrowserRouter>
   );
 }
