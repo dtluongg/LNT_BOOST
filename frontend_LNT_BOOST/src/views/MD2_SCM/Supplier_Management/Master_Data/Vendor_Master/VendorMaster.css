@@ -31,7 +31,7 @@
 
 .erp-form-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 12px;
 }
 
@@ -42,21 +42,35 @@
 }
 
 .erp-form-group.row-align {
-  flex-direction: row;
+  display: grid;
+  grid-template-columns: 130px 1fr;
   align-items: center;
   gap: 8px;
-  padding-top: 18px;
 }
 
-.erp-form-group label {
+.erp-form-group.row-align label {
   font-size: 11px;
   font-weight: 600;
   color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.3px;
+
+  width: 90px;
+  min-width: 90px;
+  max-width: 90px;
+  margin-bottom: 0;
+  text-align: left;
+  white-space: nowrap;
+
+  /* THÊM DÒNG NÀY ĐỂ CHỮ KHÔNG DÍNH SÁT VÀO Ô INPUT */
+  padding-right: 8px;
+  box-sizing: border-box;
+  /* Đảm bảo padding không làm tăng chiều rộng 90px */
 }
 
-.erp-input, .erp-select, .erp-textarea {
+.erp-input,
+.erp-select,
+.erp-textarea {
   width: 100%;
   height: 28px;
   padding: 4px 8px;
@@ -70,18 +84,31 @@
   box-sizing: border-box;
 }
 
+/* BỔ SUNG ĐOẠN NÀY: Đảm bảo khi đặt class row-align thì các ô input/select mới co giãn */
+.erp-form-group.row-align .erp-input,
+.erp-form-group.row-align .erp-select,
+.erp-form-group.row-align>div {
+  flex: 1;
+  min-width: 0;
+  /* Quy tắc sống còn chống tràn viền màn hình trong flexbox */
+}
+
 .erp-textarea {
   height: 100px;
   resize: vertical;
 }
 
-.erp-input:focus, .erp-select:focus, .erp-textarea:focus {
+.erp-input:focus,
+.erp-select:focus,
+.erp-textarea:focus {
   border-color: var(--primary-color);
   outline: none;
   box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.1);
 }
 
-.erp-input:disabled, .erp-select:disabled, .erp-textarea:disabled {
+.erp-input:disabled,
+.erp-select:disabled,
+.erp-textarea:disabled {
   background-color: #f1f5f9;
   color: #64748b;
   cursor: not-allowed;

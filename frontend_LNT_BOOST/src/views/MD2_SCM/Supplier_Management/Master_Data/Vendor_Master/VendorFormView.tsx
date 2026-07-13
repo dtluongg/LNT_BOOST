@@ -47,7 +47,10 @@ export default function VendorFormView({
   const isView = formMode === 'view';
 
   return (
-    <div className="erp-form-container fade-in">
+    <form className="erp-form-container fade-in" onSubmit={(e) => {
+      e.preventDefault();
+      onSave();
+    }}>
 
       {/* TOOLBAR */}
       <div style={{
@@ -94,9 +97,9 @@ export default function VendorFormView({
           </button>
 
           <button
-            type="button"
+            type="submit"
             className="btn-success"
-            onClick={onSave}
+            // onClick={onSave}
             disabled={isView}
             style={{
               padding: '4px 10px',
@@ -130,7 +133,7 @@ export default function VendorFormView({
       <div className="erp-card" style={{ padding: '12px' }}>
         <div style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
           gap: '12px'
         }}>
 
@@ -173,6 +176,7 @@ export default function VendorFormView({
           <div className="erp-form-group">
             <label>Vendor Code</label>
             <input
+              required
               type="text"
               name="vendorCode"
               value={formData.vendorCode}
@@ -186,6 +190,7 @@ export default function VendorFormView({
           <div className="erp-form-group">
             <label>Vendor Name</label>
             <input
+              required
               type="text"
               name="vendorName"
               value={formData.vendorName}
@@ -199,6 +204,7 @@ export default function VendorFormView({
           <div className="erp-form-group">
             <label>Vendor Group</label>
             <select
+              required
               name="vendorGroupID"
               value={formData.vendorGroupID}
               onChange={onInputChange}
@@ -271,9 +277,10 @@ export default function VendorFormView({
                 Main Address
               </h4>
 
-              <div className="erp-form-group">
+              <div className="erp-form-group row-align">
                 <label>Company Name</label>
                 <input
+                  required
                   type="text"
                   name="companyName"
                   value={formData.companyName}
@@ -283,32 +290,32 @@ export default function VendorFormView({
                 />
               </div>
 
-              <div className="grid-2col">
-                <div className="erp-form-group">
-                  <label>Phone No</label>
-                  <input
-                    type="text"
-                    name="phoneNo"
-                    value={formData.phoneNo}
-                    onChange={onInputChange}
-                    className="erp-input"
-                    disabled={isView}
-                  />
-                </div>
-                <div className="erp-form-group">
-                  <label>Fax</label>
-                  <input
-                    type="text"
-                    name="fax"
-                    value={formData.fax}
-                    onChange={onInputChange}
-                    className="erp-input"
-                    disabled={isView}
-                  />
-                </div>
+
+              <div className="erp-form-group row-align">
+                <label>Phone No</label>
+                <input
+                  required
+                  type="text"
+                  name="phoneNo"
+                  value={formData.phoneNo}
+                  onChange={onInputChange}
+                  className="erp-input"
+                  disabled={isView}
+                />
+              </div>
+              <div className="erp-form-group row-align">
+                <label>Fax</label>
+                <input
+                  type="text"
+                  name="fax"
+                  value={formData.fax}
+                  onChange={onInputChange}
+                  className="erp-input"
+                  disabled={isView}
+                />
               </div>
 
-              <div className="erp-form-group">
+              <div className="erp-form-group row-align">
                 <label>Web</label>
                 <input
                   type="text"
@@ -321,9 +328,10 @@ export default function VendorFormView({
                 />
               </div>
 
-              <div className="erp-form-group">
+              <div className="erp-form-group row-align">
                 <label>Address Line 1</label>
                 <input
+                  required
                   type="text"
                   name="addressLine1"
                   value={formData.addressLine1}
@@ -333,7 +341,7 @@ export default function VendorFormView({
                 />
               </div>
 
-              <div className="erp-form-group">
+              <div className="erp-form-group row-align">
                 <label>Address Line 2</label>
                 <input
                   type="text"
@@ -345,45 +353,48 @@ export default function VendorFormView({
                 />
               </div>
 
-              <div className="grid-3col">
-                <div className="erp-form-group">
-                  <label>City</label>
-                  <input
-                    type="text"
-                    name="city"
-                    value={formData.city}
-                    onChange={onInputChange}
-                    className="erp-input"
-                    disabled={isView}
-                  />
-                </div>
-                <div className="erp-form-group">
-                  <label>Province</label>
-                  <input
-                    type="text"
-                    name="province"
-                    value={formData.province}
-                    onChange={onInputChange}
-                    className="erp-input"
-                    disabled={isView}
-                  />
-                </div>
-                <div className="erp-form-group">
-                  <label>Postal Code</label>
-                  <input
-                    type="text"
-                    name="postalCode"
-                    value={formData.postalCode}
-                    onChange={onInputChange}
-                    className="erp-input"
-                    disabled={isView}
-                  />
-                </div>
+
+              <div className="erp-form-group row-align">
+                <label>City</label>
+                <input
+                  required
+                  type="text"
+                  name="city"
+                  value={formData.city}
+                  onChange={onInputChange}
+                  className="erp-input"
+                  disabled={isView}
+                />
+              </div>
+              <div className="erp-form-group row-align">
+                <label>Province</label>
+                <input
+                  required
+                  type="text"
+                  name="province"
+                  value={formData.province}
+                  onChange={onInputChange}
+                  className="erp-input"
+                  disabled={isView}
+                />
+              </div>
+              <div className="erp-form-group row-align">
+                <label>Postal Code</label>
+                <input
+                  type="text"
+                  name="postalCode"
+                  value={formData.postalCode}
+                  onChange={onInputChange}
+                  className="erp-input"
+                  disabled={isView}
+                />
               </div>
 
-              <div className="erp-form-group">
+
+              <div className="erp-form-group row-align">
                 <label>Country</label>
                 <select
+                  required
                   name="country"
                   value={formData.country}
                   onChange={onInputChange}
@@ -407,7 +418,7 @@ export default function VendorFormView({
                   Main Contract
                 </h4>
 
-                <div className="erp-form-group">
+                <div className="erp-form-group row-align">
                   <label>Person Name</label>
                   <div className="grid-contract-name">
                     <select
@@ -442,32 +453,32 @@ export default function VendorFormView({
                   </div>
                 </div>
 
-                <div className="grid-2col">
-                  <div className="erp-form-group">
-                    <label>Phone No - 1</label>
-                    <input
-                      type="text"
-                      name="contactPhone1"
-                      value={formData.contactPhone1}
-                      onChange={onInputChange}
-                      className="erp-input"
-                      disabled={isView}
-                    />
-                  </div>
-                  <div className="erp-form-group">
-                    <label>Phone No - 2</label>
-                    <input
-                      type="text"
-                      name="contactPhone2"
-                      value={formData.contactPhone2}
-                      onChange={onInputChange}
-                      className="erp-input"
-                      disabled={isView}
-                    />
-                  </div>
+
+                <div className="erp-form-group row-align">
+                  <label>Phone No - 1</label>
+                  <input
+                    type="text"
+                    name="contactPhone1"
+                    value={formData.contactPhone1}
+                    onChange={onInputChange}
+                    className="erp-input"
+                    disabled={isView}
+                  />
+                </div>
+                <div className="erp-form-group row-align">
+                  <label>Phone No - 2</label>
+                  <input
+                    type="text"
+                    name="contactPhone2"
+                    value={formData.contactPhone2}
+                    onChange={onInputChange}
+                    className="erp-input"
+                    disabled={isView}
+                  />
                 </div>
 
-                <div className="erp-form-group">
+
+                <div className="erp-form-group row-align">
                   <label>Email</label>
                   <input
                     type="email"
@@ -485,7 +496,7 @@ export default function VendorFormView({
                 <h4 className="erp-card-title">
                   Financial Settings
                 </h4>
-                <div className="erp-form-group">
+                <div className="erp-form-group row-align">
                   <label>Vendor Class</label>
                   <input
                     type="text"
@@ -503,7 +514,7 @@ export default function VendorFormView({
                 <h4 className="erp-card-title">
                   Vendor Certificates
                 </h4>
-                <div className="erp-form-group">
+                <div className="erp-form-group row-align">
                   <input
                     type="text"
                     name="vendorCertificates"
@@ -659,9 +670,10 @@ export default function VendorFormView({
                 <h4 className="erp-card-title">
                   Payment Detail
                 </h4>
-                <div className="erp-form-group">
+                <div className="erp-form-group row-align">
                   <label>Currency</label>
                   <select
+                    required
                     name="currency"
                     value={formData.currency}
                     onChange={onInputChange}
@@ -676,9 +688,10 @@ export default function VendorFormView({
                     ))}
                   </select>
                 </div>
-                <div className="erp-form-group">
+                <div className="erp-form-group row-align">
                   <label>Payment Term</label>
                   <select
+                    required
                     name="paymentTerm"
                     value={formData.paymentTerm}
                     onChange={onInputChange}
@@ -693,7 +706,7 @@ export default function VendorFormView({
                     ))}
                   </select>
                 </div>
-                <div className="erp-form-group">
+                <div className="erp-form-group row-align">
                   <label>Payment Reference</label>
                   <input
                     type="text"
@@ -704,6 +717,113 @@ export default function VendorFormView({
                     disabled={isView}
                   />
                 </div>
+
+                <h4 className="erp-card-title">
+                  Bank Account Detail
+                </h4>
+                <div className="erp-form-group row-align">
+                  <label>Bank Name</label>
+                  <input
+                    type="text"
+                    name="bankName"
+                    value={formData.bankName}
+                    onChange={onInputChange}
+                    className="erp-input"
+                    disabled={isView}
+                  />
+                </div>
+                <div className="erp-form-group row-align">
+                  <label>Bank Branch</label>
+                  <input
+                    type="text"
+                    name="bankBranch"
+                    value={formData.bankBranch}
+                    onChange={onInputChange}
+                    className="erp-input"
+                    disabled={isView}
+                  />
+                </div>
+                <div className="erp-form-group row-align">
+                  <label>Bank Country</label>
+                  <select
+                    required
+                    name="country"
+                    value={formData.country}
+                    onChange={onInputChange}
+                    className="erp-select"
+                    disabled={isView}
+                  >
+                    <option value="">-- Select Country --</option>
+                    {countries.map(c => (
+                      <option key={c.countryID} value={c.countryID}>
+                        {c.countryName}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="erp-form-group row-align">
+                  <label>Bank Currency</label>
+                  <select
+                    required
+                    name="bank_currency"
+                    value={formData.bank_currency}
+                    onChange={onInputChange}
+                    className="erp-select"
+                    disabled={isView}
+                  >
+                    <option value="">-- Select Currency --</option>
+                    {currencies.map(c => (
+                      <option key={c.currencyID} value={c.currencyID}>
+                        {c.currencyName}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="erp-form-group row-align">
+                  <label>Account Name</label>
+                  <input
+                    type="text"
+                    name="bankName"
+                    value={formData.bankName}
+                    onChange={onInputChange}
+                    className="erp-input"
+                    disabled={isView}
+                  />
+                </div>
+                <div className="erp-form-group row-align">
+                  <label>Account No</label>
+                  <input
+                    type="text"
+                    name="bankName"
+                    value={formData.bankName}
+                    onChange={onInputChange}
+                    className="erp-input"
+                    disabled={isView}
+                  />
+                </div>
+                <div className="erp-form-group row-align">
+                  <label>SWIFT Code</label>
+                  <input
+                    type="text"
+                    name="bankName"
+                    value={formData.bankName}
+                    onChange={onInputChange}
+                    className="erp-input"
+                    disabled={isView}
+                  />
+                </div>
+                <div className="erp-form-group row-align">
+                  <label>Instructions</label>
+                  <input
+                    type="text"
+                    name="bankName"
+                    value={formData.bankName}
+                    onChange={onInputChange}
+                    className="erp-input"
+                    disabled={isView}
+                  />
+                </div>
+
               </div>
             </div>
 
@@ -712,7 +832,7 @@ export default function VendorFormView({
               <h4 className="erp-card-title">
                 Remittance Contact
               </h4>
-              {/* <div className="erp-form-group checkbox-container" style={{ paddingBottom: '4px' }}>
+              {/* <div className="erp-form-group row-align checkbox-container" style={{ paddingBottom: '4px' }}>
                 <label className="checkbox-container">
                   <input
                     type="checkbox"
@@ -802,6 +922,6 @@ export default function VendorFormView({
 
       </div>
 
-    </div>
+    </form>
   );
 }
