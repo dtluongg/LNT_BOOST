@@ -765,16 +765,16 @@ export default function VendorFormView({
                   <label>Bank Currency</label>
                   <select
                     required
-                    name="bank_currency"
-                    value={formData.bank_currency}
+                    name="currency"
+                    value={formData.currency}
                     onChange={onInputChange}
                     className="erp-select"
                     disabled={isView}
                   >
                     <option value="">-- Select Currency --</option>
-                    {currencies.map(c => (
-                      <option key={c.currencyID} value={c.currencyID}>
-                        {c.currencyName}
+                    {currencies.map(curr => (
+                      <option key={curr.currencyCode} value={curr.currencyCode}>
+                        {curr.description}
                       </option>
                     ))}
                   </select>
