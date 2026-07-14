@@ -53,13 +53,13 @@ export default function Header({
     <header className="header">
       <div className="header-left">
         {/* Ô nhãn Phân hệ, tích hợp mở modal portal các function */}
-        <button 
-          className="module-badge-header" 
+        <button
+          className="module-badge-header"
           onClick={onOpenMenuPortal}
           title="Mở Sơ đồ Chức năng (Xem các functions)"
         >
           <Layers size={13} />
-          <span>Phân hệ: <strong>{activeModuleName}</strong></span>
+          <span>Module : <strong>{activeModuleName}</strong></span>
         </button>
 
         {/* Cố định thông tin Site đã chọn (Không được thay đổi tại đây) */}
