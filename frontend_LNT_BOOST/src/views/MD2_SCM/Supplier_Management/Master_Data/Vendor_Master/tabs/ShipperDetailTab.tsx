@@ -76,6 +76,7 @@ export default function ShipperDetailTab({
 
   // Local state for the Location Input Form
   const [locationForm, setLocationForm] = useState<LocationFormState>(initialFormState);
+  const [isFormOpen, setIsFormOpen] = useState(false);
 
   // Local states for the table filters
   const [filterDeliveryTerm, setFilterDeliveryTerm] = useState<string>('All');
@@ -96,6 +97,16 @@ export default function ShipperDetailTab({
   // Clear / Reset form
   const handleClearForm = () => {
     setLocationForm(initialFormState);
+  };
+
+  const handleAddNewClick = () => {
+    handleClearForm();
+    setIsFormOpen(true);
+  };
+
+  const handleRowDoubleClick = (loc: any) => {
+    handleRowClick(loc);
+    setIsFormOpen(true);
   };
 
   // Copy data from vendor general contact info
@@ -173,6 +184,7 @@ export default function ShipperDetailTab({
       await onSaveLocation(locationForm);
       alert('Shipper location saved successfully!');
       handleClearForm();
+      setIsFormOpen(false);
     } catch (err: any) {
       alert('Failed to save location: ' + err.message);
     }
@@ -186,6 +198,7 @@ export default function ShipperDetailTab({
       await onDeleteLocation(locationForm.locationID);
       alert('Shipper location deleted successfully!');
       handleClearForm();
+      setIsFormOpen(false);
     } catch (err: any) {
       alert('Failed to delete location: ' + err.message);
     }
@@ -232,7 +245,7 @@ export default function ShipperDetailTab({
       }}>
         <button
           type="button"
-          onClick={handleClearForm}
+          onClick={handleAddNewClick}
           disabled={isView}
           style={{
             display: 'flex',
@@ -248,26 +261,6 @@ export default function ShipperDetailTab({
           title="Create New Location"
         >
           <Plus size={14} />
-        </button>
-
-        <button
-          type="button"
-          onClick={handleSaveClick}
-          disabled={isView}
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            width: '28px',
-            height: '28px',
-            border: '1px solid var(--border-color)',
-            borderRadius: '4px',
-            backgroundColor: 'var(--bg-primary)',
-            cursor: isView ? 'not-allowed' : 'pointer'
-          }}
-          title="Save Location"
-        >
-          <Save size={14} />
         </button>
 
         <button
@@ -311,311 +304,360 @@ export default function ShipperDetailTab({
         </button>
       </div>
 
+      {/* SHIPPER LOCATION CONTACT MODAL */}
+      {isFormOpen && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '100vw',
+          height: '100vh',
+          backgroundColor: 'rgba(0, 0, 0, 0.45)',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          zIndex: 1000
+        }}>
+          <div style={{
+            backgroundColor: 'var(--bg-secondary)',
+            border: '1px solid var(--border-color)',
+            borderRadius: '8px',
+            boxShadow: 'var(--shadow-premium)',
+            width: '800px',
+            maxWidth: '95%',
+            maxHeight: '90vh',
+            display: 'flex',
+            flexDirection: 'column',
+            overflow: 'hidden'
+          }}>
+            {/* Modal Header */}
+            <div style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              padding: '10px 16px',
+              borderBottom: '1px solid var(--border-color)',
+              backgroundColor: 'var(--bg-tertiary)'
+            }}>
+              <div style={{ fontWeight: 'bold', fontSize: '12.5px', color: 'var(--text-main)' }}>
+                {locationForm.locationID ? `Edit Shipper Location: #${locationForm.locationID}` : 'Create New Shipper Location'}
+              </div>
+              <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+                <button
+                  type="button"
+                  className="btn-secondary"
+                  style={{ fontSize: '10.5px', padding: '2px 8px', height: '22px' }}
+                  onClick={handleCopyFromVendor}
+                  disabled={isView}
+                >
+                  Copy from Vendor Contact
+                </button>
+                <button
+                  type="button"
+                  className="btn-secondary"
+                  style={{ fontSize: '10.5px', padding: '2px 8px', height: '22px' }}
+                  onClick={handleClearForm}
+                  disabled={isView}
+                >
+                  Clear Text
+                </button>
+                <button
+                  type="button"
+                  className="btn-primary"
+                  style={{ fontSize: '10.5px', padding: '2px 12px', height: '22px', display: 'flex', alignItems: 'center', gap: '4px' }}
+                  onClick={handleSaveClick}
+                  disabled={isView}
+                >
+                  Save
+                </button>
+                <button
+                  type="button"
+                  className="btn-secondary"
+                  style={{ fontSize: '10.5px', padding: '2px 8px', height: '22px', backgroundColor: 'var(--border-color)', color: 'var(--text-main)' }}
+                  onClick={() => setIsFormOpen(false)}
+                >
+                  Close
+                </button>
+              </div>
+            </div>
 
-      {/* SHIPPER LOCATION CONTACT PANEL */}
-      <div style={{
-        border: '1px solid var(--border-color)',
-        borderRadius: '6px',
-        padding: '8px 12px',
-        backgroundColor: 'var(--bg-secondary)',
-        fontSize: '11px'
-      }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-          <div style={{ fontWeight: 'bold', color: 'var(--text-muted)' }}>Shipper Location Contact</div>
-          <div style={{ display: 'flex', gap: '6px' }}>
-            <button
-              type="button"
-              className="btn-secondary"
-              style={{ fontSize: '10.5px', padding: '2px 8px', height: '22px' }}
-              onClick={handleCopyFromVendor}
-              disabled={isView}
-            >
-              Copy from Vendor's Detail Contact
-            </button>
-            <button
-              type="button"
-              className="btn-secondary"
-              style={{ fontSize: '10.5px', padding: '2px 8px', height: '22px' }}
-              onClick={handleClearForm}
-              disabled={isView}
-            >
-              Clear Text
-            </button>
+            {/* Modal Body */}
+            <div style={{ padding: '16px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              {/* TWO-COLUMN FORM LAYOUT */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+
+                {/* LEFT COLUMN: CONTACT DETAILS */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+
+                  {/* ROW 1: Location ID & Location Name */}
+                  <div style={{ display: 'grid', gridTemplateColumns: '100px 60px 1fr', alignItems: 'center', gap: '6px' }}>
+                    <span style={{ fontWeight: 600, fontSize: '11px' }}>Location ID</span>
+                    <input
+                      type="text"
+                      value={locationForm.locationID ?? '0'}
+                      disabled
+                      className="erp-input"
+                      style={{ height: '22px', fontSize: '11px', backgroundColor: 'var(--bg-tertiary)', textAlign: 'center' }}
+                    />
+                    <input
+                      type="text"
+                      name="locationName"
+                      value={locationForm.locationName || ''}
+                      onChange={handleFormInputChange}
+                      className="erp-input"
+                      disabled={isView}
+                      placeholder="Location Name (Required)"
+                      style={{ height: '22px', fontSize: '11px' }}
+                      required
+                    />
+                  </div>
+
+                  {/* ROW 2: Person Name */}
+                  <div style={{ display: 'grid', gridTemplateColumns: '100px 60px 1fr 1fr', alignItems: 'center', gap: '6px' }}>
+                    <span style={{ fontWeight: 600, fontSize: '11px' }}>Person Name</span>
+                    <select
+                      name="contractPersonTitle"
+                      value={locationForm.contractPersonTitle || 'Mr'}
+                      onChange={handleFormInputChange}
+                      className="erp-select"
+                      disabled={isView}
+                      style={{ height: '22px', fontSize: '11px', padding: '2px' }}
+                    >
+                      <option value="Mr">Mr</option>
+                      <option value="Ms">Ms</option>
+                      <option value="Mrs">Mrs</option>
+                    </select>
+                    <input
+                      type="text"
+                      name="contractPersonName"
+                      value={locationForm.contractPersonName || ''}
+                      onChange={handleFormInputChange}
+                      className="erp-input"
+                      disabled={isView}
+                      placeholder="Name"
+                      style={{ height: '22px', fontSize: '11px' }}
+                    />
+                    <input
+                      type="text"
+                      name="contractPersonPosition"
+                      value={locationForm.contractPersonPosition || ''}
+                      onChange={handleFormInputChange}
+                      className="erp-input"
+                      disabled={isView}
+                      placeholder="Position"
+                      style={{ height: '22px', fontSize: '11px' }}
+                    />
+                  </div>
+
+                  {/* ROW 3: Phone No. & Fax */}
+                  <div style={{ display: 'grid', gridTemplateColumns: '100px 1fr 30px 1fr', alignItems: 'center', gap: '6px' }}>
+                    <span style={{ fontWeight: 600, fontSize: '11px' }}>Phone No.</span>
+                    <input
+                      type="text"
+                      name="phoneNo"
+                      value={locationForm.phoneNo || ''}
+                      onChange={handleFormInputChange}
+                      className="erp-input"
+                      disabled={isView}
+                      placeholder="Phone No (Required)"
+                      style={{ height: '22px', fontSize: '11px' }}
+                      required
+                    />
+                    <span style={{ fontWeight: 600, fontSize: '11px', textAlign: 'right' }}>Fax</span>
+                    <input
+                      type="text"
+                      name="fax"
+                      value={locationForm.fax || ''}
+                      onChange={handleFormInputChange}
+                      className="erp-input"
+                      disabled={isView}
+                      placeholder="Fax"
+                      style={{ height: '22px', fontSize: '11px' }}
+                    />
+                  </div>
+
+                  {/* ROW 4: Email */}
+                  <div style={{ display: 'grid', gridTemplateColumns: '100px 1fr', alignItems: 'center', gap: '6px' }}>
+                    <span style={{ fontWeight: 600, fontSize: '11px' }}>Email</span>
+                    <input
+                      type="email"
+                      name="email"
+                      value={locationForm.email || ''}
+                      onChange={handleFormInputChange}
+                      className="erp-input"
+                      disabled={isView}
+                      placeholder="Email address"
+                      style={{ height: '22px', fontSize: '11px' }}
+                    />
+                  </div>
+                </div>
+
+                {/* RIGHT COLUMN: ADDRESS DETAILS */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+
+                  {/* ROW 1: Address Line 1 */}
+                  <div style={{ display: 'grid', gridTemplateColumns: '100px 1fr', alignItems: 'center', gap: '6px' }}>
+                    <span style={{ fontWeight: 600, fontSize: '11px' }}>Address Line 1</span>
+                    <input
+                      type="text"
+                      name="addressLine1"
+                      value={locationForm.addressLine1 || ''}
+                      onChange={handleFormInputChange}
+                      className="erp-input"
+                      disabled={isView}
+                      placeholder="Address Line 1 (Required)"
+                      style={{ height: '22px', fontSize: '11px' }}
+                      required
+                    />
+                  </div>
+
+                  {/* ROW 2: Address Line 2 */}
+                  <div style={{ display: 'grid', gridTemplateColumns: '100px 1fr', alignItems: 'center', gap: '6px' }}>
+                    <span style={{ fontWeight: 600, fontSize: '11px' }}>Address Line 2</span>
+                    <input
+                      type="text"
+                      name="addressLine2"
+                      value={locationForm.addressLine2 || ''}
+                      onChange={handleFormInputChange}
+                      className="erp-input"
+                      disabled={isView}
+                      placeholder="Address Line 2"
+                      style={{ height: '22px', fontSize: '11px' }}
+                    />
+                  </div>
+
+                  {/* ROW 3: City & Province */}
+                  <div style={{ display: 'grid', gridTemplateColumns: '100px 1fr 60px 1fr', alignItems: 'center', gap: '6px' }}>
+                    <span style={{ fontWeight: 600, fontSize: '11px' }}>City</span>
+                    <input
+                      type="text"
+                      name="city"
+                      value={locationForm.city || ''}
+                      onChange={handleFormInputChange}
+                      className="erp-input"
+                      disabled={isView}
+                      placeholder="City (Required)"
+                      style={{ height: '22px', fontSize: '11px' }}
+                      required
+                    />
+                    <span style={{ fontWeight: 600, fontSize: '11px', textAlign: 'right' }}>Province</span>
+                    <input
+                      type="text"
+                      name="province"
+                      value={locationForm.province || ''}
+                      onChange={handleFormInputChange}
+                      className="erp-input"
+                      disabled={isView}
+                      placeholder="Province (Required)"
+                      style={{ height: '22px', fontSize: '11px' }}
+                      required
+                    />
+                  </div>
+
+                  {/* ROW 4: Country & Postal Code */}
+                  <div style={{ display: 'grid', gridTemplateColumns: '100px 1fr 70px 1fr', alignItems: 'center', gap: '6px' }}>
+                    <span style={{ fontWeight: 600, fontSize: '11px' }}>Country</span>
+                    <select
+                      name="countryID"
+                      value={locationForm.countryID || ''}
+                      onChange={handleFormInputChange}
+                      className="erp-select"
+                      disabled={isView}
+                      style={{ height: '22px', fontSize: '11px', padding: '2px' }}
+                    >
+                      <option value="">-- Select --</option>
+                      {countries.map(c => (
+                        <option key={c.countryID} value={c.countryID}>
+                          {c.countryName}
+                        </option>
+                      ))}
+                    </select>
+                    <span style={{ fontWeight: 600, fontSize: '11px', textAlign: 'right' }}>Postal code</span>
+                    <input
+                      type="text"
+                      name="postalcode"
+                      value={locationForm.postalcode || ''}
+                      onChange={handleFormInputChange}
+                      className="erp-input"
+                      disabled={isView}
+                      placeholder="Postal code"
+                      style={{ height: '22px', fontSize: '11px' }}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* LOGISTICS & STATUS ROW */}
+              <div style={{
+                display: 'flex',
+                flexWrap: 'wrap',
+                gap: '24px',
+                alignItems: 'center',
+                padding: '8px 12px',
+                fontSize: '11px',
+                border: '1px solid var(--border-color)',
+                borderRadius: '6px',
+                backgroundColor: 'var(--bg-tertiary)'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <span style={{ fontWeight: 600, fontSize: '11px' }}>Term Of Delivery</span>
+                  <select
+                    name="termOfDelivery"
+                    value={locationForm.termOfDelivery || ''}
+                    onChange={handleFormInputChange}
+                    className="erp-select"
+                    disabled={isView}
+                    style={{ width: '150px', height: '22px', fontSize: '11px' }}
+                  >
+                    <option value="">-- Select --</option>
+                    {deliveryTerms.map(dt => (
+                      <option key={dt.deliveryTermCode} value={dt.deliveryTermCode}>
+                        {dt.deliveryTermCode} - {dt.description}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <span style={{ fontWeight: 600, fontSize: '11px' }}>Port Of Loading</span>
+                  <input
+                    type="text"
+                    name="portOfLoading"
+                    value={locationForm.portOfLoading || ''}
+                    onChange={handleFormInputChange}
+                    className="erp-input"
+                    disabled={isView}
+                    placeholder="Port Of Loading"
+                    style={{ width: '180px', height: '22px', fontSize: '11px' }}
+                  />
+                </div>
+
+                <label className="checkbox-container" style={{ display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer', margin: 0 }}>
+                  <input
+                    type="checkbox"
+                    name="defaultLocationflag"
+                    checked={locationForm.defaultLocationflag}
+                    onChange={handleFormInputChange}
+                    disabled={isView}
+                  />
+                  <span style={{ fontWeight: 600, fontSize: '11px' }}>Is Default Location</span>
+                </label>
+
+                <label className="checkbox-container" style={{ display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer', margin: 0 }}>
+                  <input
+                    type="checkbox"
+                    name="activeflag"
+                    checked={locationForm.activeflag}
+                    onChange={handleFormInputChange}
+                    disabled={isView}
+                  />
+                  <span style={{ fontWeight: 600, fontSize: '11px' }}>Active Flag</span>
+                </label>
+              </div>
+            </div>
           </div>
         </div>
-
-        {/* TWO-COLUMN FORM LAYOUT */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-
-          {/* LEFT COLUMN: CONTACT DETAILS */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-
-            {/* ROW 1: Location ID & Location Name */}
-            <div style={{ display: 'grid', gridTemplateColumns: '100px 60px 1fr', alignItems: 'center', gap: '6px' }}>
-              <span style={{ fontWeight: 600 }}>Location ID</span>
-              <input
-                type="text"
-                value={locationForm.locationID ?? '0'}
-                disabled
-                className="erp-input"
-                style={{ height: '22px', fontSize: '11px', backgroundColor: 'var(--bg-tertiary)', textAlign: 'center' }}
-              />
-              <input
-                type="text"
-                name="locationName"
-                value={locationForm.locationName || ''}
-                onChange={handleFormInputChange}
-                className="erp-input"
-                disabled={isView}
-                placeholder="Location Name (Required)"
-                style={{ height: '22px', fontSize: '11px' }}
-                required
-              />
-            </div>
-
-            {/* ROW 2: Person Name (Salutation dropdown + First Name + Last Name/Position) */}
-            <div style={{ display: 'grid', gridTemplateColumns: '100px 60px 1fr 1fr', alignItems: 'center', gap: '6px' }}>
-              <span style={{ fontWeight: 600 }}>Person Name</span>
-              <select
-                name="contractPersonTitle"
-                value={locationForm.contractPersonTitle || 'Mr'}
-                onChange={handleFormInputChange}
-                className="erp-select"
-                disabled={isView}
-                style={{ height: '22px', fontSize: '11px', padding: '2px' }}
-              >
-                <option value="Mr">Mr</option>
-                <option value="Ms">Ms</option>
-                <option value="Mrs">Mrs</option>
-              </select>
-              <input
-                type="text"
-                name="contractPersonName"
-                value={locationForm.contractPersonName || ''}
-                onChange={handleFormInputChange}
-                className="erp-input"
-                disabled={isView}
-                placeholder="Name"
-                style={{ height: '22px', fontSize: '11px' }}
-              />
-              <input
-                type="text"
-                name="contractPersonPosition"
-                value={locationForm.contractPersonPosition || ''}
-                onChange={handleFormInputChange}
-                className="erp-input"
-                disabled={isView}
-                placeholder="Position"
-                style={{ height: '22px', fontSize: '11px' }}
-              />
-            </div>
-
-            {/* ROW 3: Phone No. & Fax */}
-            <div style={{ display: 'grid', gridTemplateColumns: '100px 1fr 30px 1fr', alignItems: 'center', gap: '6px' }}>
-              <span style={{ fontWeight: 600 }}>Phone No.</span>
-              <input
-                type="text"
-                name="phoneNo"
-                value={locationForm.phoneNo || ''}
-                onChange={handleFormInputChange}
-                className="erp-input"
-                disabled={isView}
-                placeholder="Phone No (Required)"
-                style={{ height: '22px', fontSize: '11px' }}
-                required
-              />
-              <span style={{ fontWeight: 600, textAlign: 'right' }}>Fax</span>
-              <input
-                type="text"
-                name="fax"
-                value={locationForm.fax || ''}
-                onChange={handleFormInputChange}
-                className="erp-input"
-                disabled={isView}
-                placeholder="Fax"
-                style={{ height: '22px', fontSize: '11px' }}
-              />
-            </div>
-
-            {/* ROW 4: Email */}
-            <div style={{ display: 'grid', gridTemplateColumns: '100px 1fr', alignItems: 'center', gap: '6px' }}>
-              <span style={{ fontWeight: 600 }}>Email</span>
-              <input
-                type="email"
-                name="email"
-                value={locationForm.email || ''}
-                onChange={handleFormInputChange}
-                className="erp-input"
-                disabled={isView}
-                placeholder="Email address"
-                style={{ height: '22px', fontSize: '11px' }}
-              />
-            </div>
-          </div>
-
-          {/* RIGHT COLUMN: ADDRESS DETAILS */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-
-            {/* ROW 1: Address Line 1 */}
-            <div style={{ display: 'grid', gridTemplateColumns: '100px 1fr', alignItems: 'center', gap: '6px' }}>
-              <span style={{ fontWeight: 600 }}>Address Line 1</span>
-              <input
-                type="text"
-                name="addressLine1"
-                value={locationForm.addressLine1 || ''}
-                onChange={handleFormInputChange}
-                className="erp-input"
-                disabled={isView}
-                placeholder="Address Line 1 (Required)"
-                style={{ height: '22px', fontSize: '11px' }}
-                required
-              />
-            </div>
-
-            {/* ROW 2: Address Line 2 */}
-            <div style={{ display: 'grid', gridTemplateColumns: '100px 1fr', alignItems: 'center', gap: '6px' }}>
-              <span style={{ fontWeight: 600 }}>Address Line 2</span>
-              <input
-                type="text"
-                name="addressLine2"
-                value={locationForm.addressLine2 || ''}
-                onChange={handleFormInputChange}
-                className="erp-input"
-                disabled={isView}
-                placeholder="Address Line 2"
-                style={{ height: '22px', fontSize: '11px' }}
-              />
-            </div>
-
-            {/* ROW 3: City & Province */}
-            <div style={{ display: 'grid', gridTemplateColumns: '100px 1fr 60px 1fr', alignItems: 'center', gap: '6px' }}>
-              <span style={{ fontWeight: 600 }}>City</span>
-              <input
-                type="text"
-                name="city"
-                value={locationForm.city || ''}
-                onChange={handleFormInputChange}
-                className="erp-input"
-                disabled={isView}
-                placeholder="City (Required)"
-                style={{ height: '22px', fontSize: '11px' }}
-                required
-              />
-              <span style={{ fontWeight: 600, textAlign: 'right' }}>Province</span>
-              <input
-                type="text"
-                name="province"
-                value={locationForm.province || ''}
-                onChange={handleFormInputChange}
-                className="erp-input"
-                disabled={isView}
-                placeholder="Province (Required)"
-                style={{ height: '22px', fontSize: '11px' }}
-                required
-              />
-            </div>
-
-            {/* ROW 4: Country & Postal Code */}
-            <div style={{ display: 'grid', gridTemplateColumns: '100px 1fr 70px 1fr', alignItems: 'center', gap: '6px' }}>
-              <span style={{ fontWeight: 600 }}>Country</span>
-              <select
-                name="countryID"
-                value={locationForm.countryID || ''}
-                onChange={handleFormInputChange}
-                className="erp-select"
-                disabled={isView}
-                style={{ height: '22px', fontSize: '11px', padding: '2px' }}
-              >
-                <option value="">-- Select --</option>
-                {countries.map(c => (
-                  <option key={c.countryID} value={c.countryID}>
-                    {c.countryName}
-                  </option>
-                ))}
-              </select>
-              <span style={{ fontWeight: 600, textAlign: 'right' }}>Postal code</span>
-              <input
-                type="text"
-                name="postalcode"
-                value={locationForm.postalcode || ''}
-                onChange={handleFormInputChange}
-                className="erp-input"
-                disabled={isView}
-                placeholder="Postal code"
-                style={{ height: '22px', fontSize: '11px' }}
-              />
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* LOGISTICS & STATUS ROW */}
-      <div style={{
-        display: 'flex',
-        flexWrap: 'wrap',
-        gap: '24px',
-        alignItems: 'center',
-        padding: '4px 12px',
-        fontSize: '11px',
-        border: '1px solid var(--border-color)',
-        borderRadius: '6px',
-        backgroundColor: 'var(--bg-secondary)'
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-          <span style={{ fontWeight: 600 }}>Term Of Delivery</span>
-          <select
-            name="termOfDelivery"
-            value={locationForm.termOfDelivery || ''}
-            onChange={handleFormInputChange}
-            className="erp-select"
-            disabled={isView}
-            style={{ width: '150px', height: '22px', fontSize: '11px' }}
-          >
-            <option value="">-- Select --</option>
-            {deliveryTerms.map(dt => (
-              <option key={dt.deliveryTermCode} value={dt.deliveryTermCode}>
-                {dt.deliveryTermCode} - {dt.description}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-          <span style={{ fontWeight: 600 }}>Port Of Loading</span>
-          <input
-            type="text"
-            name="portOfLoading"
-            value={locationForm.portOfLoading || ''}
-            onChange={handleFormInputChange}
-            className="erp-input"
-            disabled={isView}
-            placeholder="Port Of Loading"
-            style={{ width: '180px', height: '22px', fontSize: '11px' }}
-          />
-        </div>
-
-        <label className="checkbox-container" style={{ display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer', margin: 0 }}>
-          <input
-            type="checkbox"
-            name="defaultLocationflag"
-            checked={locationForm.defaultLocationflag}
-            onChange={handleFormInputChange}
-            disabled={isView}
-          />
-          <span style={{ fontWeight: 600 }}>Is Default Location</span>
-        </label>
-
-        <label className="checkbox-container" style={{ display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer', margin: 0 }}>
-          <input
-            type="checkbox"
-            name="activeflag"
-            checked={locationForm.activeflag}
-            onChange={handleFormInputChange}
-            disabled={isView}
-          />
-          <span style={{ fontWeight: 600 }}>Active Flag</span>
-        </label>
-      </div>
+      )}
 
       {/* SECTION 1: SHIPPING INSTRUCTIONS */}
       <div className="erp-card" style={{ maxWidth: '450px', padding: '12px' }}>
@@ -804,11 +846,12 @@ export default function ShipperDetailTab({
                   <tr
                     key={loc.locationID || idx}
                     onClick={() => handleRowClick(loc)}
+                    onDoubleClick={() => handleRowDoubleClick(loc)}
                     style={{
                       cursor: 'pointer',
                       backgroundColor: locationForm.locationID === loc.locationID ? 'var(--bg-tertiary)' : 'transparent'
                     }}
-                    title="Click to edit location"
+                    title="Click to highlight, Double-click to edit location"
                   >
                     <td>{loc.locationID}</td>
                     <td style={{ fontWeight: 600 }}>{loc.locationName}</td>

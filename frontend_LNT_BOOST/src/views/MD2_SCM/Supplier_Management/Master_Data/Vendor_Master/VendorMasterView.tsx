@@ -182,8 +182,7 @@ export default function VendorMasterView() {
   const handleAddNew = () => {
     setFormData({
       ...initialVendorState,
-      // Create a transient ID
-      vendorID: 'VDC' + Math.floor(10000 + Math.random() * 90000)
+      vendorID: '(Auto Generated)'
     });
     setFormMode('create');
     setViewMode('form');
@@ -248,11 +247,17 @@ export default function VendorMasterView() {
   const handleSave = async () => {
     try {
       if (formMode === 'create') {
-        await vendorApi.createVendor(formData);
+        const res = await vendorApi.createVendor(formData);
+        const newVendorID = res?.[0]?.newVendorID;
+        if (newVendorID) {
+          alert(`Vendor data saved successfully! Generated Vendor ID: ${newVendorID}`);
+        } else {
+          alert('Vendor data saved successfully!');
+        }
       } else {
         await vendorApi.updateVendor(formData);
+        alert('Vendor data saved successfully!');
       }
-      alert('Vendor data saved successfully!');
       setViewMode('list');
       setFormMode('view');
       loadVendors();

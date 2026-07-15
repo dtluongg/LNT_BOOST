@@ -408,8 +408,21 @@ export default function VendorFormView({
         <button
           type="button"
           className={`workspace-tab-item ${activeTab === 'shipper' ? 'active' : ''}`}
-          onClick={() => onTabChange('shipper')}
-          style={{ height: activeTab === 'shipper' ? '34px' : '32px', fontSize: '12px', padding: '4px 12px' }}
+          onClick={() => {
+            if (formMode === 'create') {
+              alert('Please save the vendor first before configuring shipper locations.');
+              return;
+            }
+            onTabChange('shipper');
+          }}
+          style={{ 
+            height: activeTab === 'shipper' ? '34px' : '32px', 
+            fontSize: '12px', 
+            padding: '4px 12px',
+            opacity: formMode === 'create' ? 0.5 : 1,
+            cursor: formMode === 'create' ? 'not-allowed' : 'pointer'
+          }}
+          title={formMode === 'create' ? 'Please save the vendor first' : ''}
         >
           <UserCheck size={12} style={{ marginRight: '4px' }} />
           Shipper Detail

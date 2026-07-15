@@ -71,7 +71,7 @@ export const vendorApi = {
   },
 
   createVendor: async (vendor: any): Promise<any> => {
-    return apiFetch<any>('/SqlGateway/query', {
+    const raw = await apiFetch<any>('/SqlGateway/query', {
       method: 'POST',
       body: JSON.stringify({
         queryName: 'CreateVendor',
@@ -108,10 +108,14 @@ export const vendorApi = {
           RemittanceContactPersonPhoneNo1: vendor.remitPhone1,
           RemittanceContactPersonPhoneNo2: vendor.remitPhone2,
           RemittanceContactPersonEmail: vendor.remitEmail,
-          ActiveFlag: vendor.activeFlag ? 1 : 0
+          ActiveFlag: vendor.activeFlag ? 1 : 0,
+          DefaultShippingTermCode: vendor.shippingTerms,
+          DefaultDeliveryModeCode: vendor.deliveryMode,
+          FOBPointCode: vendor.fobPoint
         }
       })
     });
+    return mapKeysToCamelCase(raw);
   },
 
   updateVendor: async (vendor: any): Promise<any> => {
@@ -152,7 +156,10 @@ export const vendorApi = {
           RemitPhone1: vendor.remitPhone1,
           RemitPhone2: vendor.remitPhone2,
           RemitEmail: vendor.remitEmail,
-          ActiveFlag: vendor.activeFlag ? 1 : 0
+          ActiveFlag: vendor.activeFlag ? 1 : 0,
+          DefaultShippingTermCode: vendor.shippingTerms,
+          DefaultDeliveryModeCode: vendor.deliveryMode,
+          FOBPointCode: vendor.fobPoint
         }
       })
     });
