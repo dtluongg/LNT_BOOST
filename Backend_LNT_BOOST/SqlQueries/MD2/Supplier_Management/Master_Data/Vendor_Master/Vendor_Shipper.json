@@ -6,5 +6,5 @@
     "GetDeliveryModeMaster": "SELECT DeliveryModeCode, Description, ActiveFlag FROM tblDeliveryModeMaster",
     "GetDeliveryTermMaster": "SELECT DeliveryTermCode, Description, ActiveFlag FROM tblDeliveryTermMaster",
     "GetShippingTermMaster": "SELECT ShippingTermCode, Description, ActiveFlag FROM tblShippingTermMaster",
-    "GetShippingFOBPoints": "SELECT FOBPointCode, Description, ActiveFlag FROM tblShippingFOBPoints"
+    "GetShippingFOBPoints": "SELECT FOBPointCode AS fobPointCode, Description, ActiveFlag FROM tblShippingFOBPoints"
 }
