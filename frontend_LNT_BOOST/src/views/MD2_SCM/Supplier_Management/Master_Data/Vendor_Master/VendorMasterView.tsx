@@ -98,6 +98,11 @@ export default function VendorMasterView() {
   const [paymentTypes, setPaymentTypes] = useState<any[]>([]);
   const [shipperLocations, setShipperLocations] = useState<any[]>([]);
 
+  // Vendor Shipping
+  const [deliveryModes, setDeliveryModes] = useState<any[]>([]);
+  const [shippingTerms, setShippingTerms] = useState<any[]>([]);
+  const [shippingFOBPoints, setShippingFOBPoints] = useState<any[]>([]);
+  const [deliveryTerms, setDeliveryTerms] = useState<any[]>([]);
 
   // Load lookup options and vendors list on mount
   useEffect(() => {
@@ -107,16 +112,24 @@ export default function VendorMasterView() {
 
   const loadLookupData = async () => {
     try {
-      const [groups, ctries, currs, terms] = await Promise.all([
+      const [groups, ctries, currs, terms, dModes, dTerms, sTerms, sFOBs] = await Promise.all([
         vendorApi.getVendorGroups(),
         vendorApi.getCountries(),
         vendorApi.getCurrencies(),
-        vendorApi.getPaymentTypes()
+        vendorApi.getPaymentTypes(),
+        vendorApi.getDeliveryModeMaster(),
+        vendorApi.getDeliveryTermMaster(),
+        vendorApi.getShippingTermMaster(),
+        vendorApi.getShippingFOBPoints()
       ]);
       setVendorGroups(groups);
       setCountries(ctries);
       setCurrencies(currs);
       setPaymentTypes(terms);
+      setDeliveryModes(dModes);
+      setDeliveryTerms(dTerms);
+      setShippingTerms(sTerms);
+      setShippingFOBPoints(sFOBs);
     } catch (err: any) {
       console.error('Failed to load lookup catalogs:', err.message);
     }
@@ -195,8 +208,33 @@ export default function VendorMasterView() {
     } catch (err) {
       console.error("Failed to load shipper locations", err);
     }
+  };
 
+  const handleReloadLocations = async (vendorID: string) => {
+    try {
+      const locations = await vendorApi.getShipperLocations(vendorID);
+      setShipperLocations(locations);
+    } catch (err) {
+      console.error("Failed to reload shipper locations", err);
+    }
+  };
 
+  const handleSaveLocation = async (location: any) => {
+    try {
+      await vendorApi.saveShipperLocation({ ...location, vendorID: formData.vendorID });
+      await handleReloadLocations(formData.vendorID);
+    } catch (err: any) {
+      throw new Error(err.message || 'Failed to save shipper location');
+    }
+  };
+
+  const handleDeleteLocation = async (locationID: number) => {
+    try {
+      await vendorApi.deleteShipperLocation(formData.vendorID, locationID);
+      await handleReloadLocations(formData.vendorID);
+    } catch (err: any) {
+      throw new Error(err.message || 'Failed to delete shipper location');
+    }
   };
 
   // Cancel form editing and return to list
@@ -255,8 +293,13 @@ export default function VendorMasterView() {
           currencies={currencies}
           paymentTypes={paymentTypes}
           shipperLocations={shipperLocations}
-        // onAddLocation={handleAddLocation}
-        // onEditLocation={handleEditLocation}
+          deliveryModes={deliveryModes}
+          shippingFOBPoints={shippingFOBPoints}
+          shippingTerms={shippingTerms}
+          deliveryTerms={deliveryTerms}
+          onSaveLocation={handleSaveLocation}
+          onDeleteLocation={handleDeleteLocation}
+          onReloadLocations={handleReloadLocations}
         />
       )}
     </div>

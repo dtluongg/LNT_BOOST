@@ -184,14 +184,103 @@ export const vendorApi = {
   },
   // Lưu địa điểm (Thêm mới/Cập nhật)
   saveShipperLocation: async (location: any): Promise<any> => {
+    const isEdit = !!location.locationID;
     return apiFetch<any>('/SqlGateway/query', {
       method: 'POST',
       body: JSON.stringify({
-        queryName: location.locationID ? 'UpdateShipperLocation' : 'CreateShipperLocation',
-        parameters: { ...location }
+        queryName: isEdit ? 'UpdateShipperLocation' : 'CreateShipperLocation',
+        parameters: {
+          VendorID: location.vendorID,
+          LocationID: location.locationID || 0,
+          LocationName: location.locationName,
+          AddressLine1: location.addressLine1,
+          AddressLine2: location.addressLine2,
+          City: location.city,
+          Province: location.province,
+          Postalcode: location.postalcode,
+          CountryID: location.countryID,
+          PhoneNo: location.phoneNo,
+          Fax: location.fax,
+          Email: location.email,
+          ContractPersonTitle: location.contractPersonTitle,
+          ContractPersonName: location.contractPersonName,
+          ContractPersonPosition: location.contractPersonPosition,
+          TermOfDelivery: location.termOfDelivery,
+          PortOfLoading: location.portOfLoading,
+          DefaultLocationflag: location.defaultLocationflag ? 1 : 0,
+          Activeflag: location.activeflag ? 1 : 0
+        }
       })
     });
+  },
+
+  deleteShipperLocation: async (vendorID: string, locationID: number): Promise<any> => {
+    return apiFetch<any>('/SqlGateway/query', {
+      method: 'POST',
+      body: JSON.stringify({
+        queryName: 'DeleteShipperLocation',
+        parameters: {
+          VendorID: vendorID,
+          LocationID: locationID
+        }
+      })
+    });
+  },
+
+
+
+
+
+  // Vendor Shipping:
+  // getShipperLocations: async (): Promise<any[]> => {
+  //   const raw = await apiFetch<any[]>('/SqlGateway/query', {
+  //     method: 'POST',
+  //     body: JSON.stringify({
+  //       queryName: 'GetShipperLocations'
+  //     })
+  //   });
+  //   return mapKeysToCamelCase(raw);
+  // },
+
+  getDeliveryModeMaster: async (): Promise<any[]> => {
+    const raw = await apiFetch<any[]>('/SqlGateway/query', {
+      method: 'POST',
+      body: JSON.stringify({
+        queryName: 'GetDeliveryModeMaster'
+      })
+    });
+    return mapKeysToCamelCase(raw);
+  },
+
+  // Vendor Shipping:
+  getShippingTermMaster: async (): Promise<any[]> => {
+    const raw = await apiFetch<any[]>('/SqlGateway/query', {
+      method: 'POST',
+      body: JSON.stringify({
+        queryName: 'GetShippingTermMaster'
+      })
+    });
+    return mapKeysToCamelCase(raw);
+  },
+
+  // Vendor Shipping:
+  getShippingFOBPoints: async (): Promise<any[]> => {
+    const raw = await apiFetch<any[]>('/SqlGateway/query', {
+      method: 'POST',
+      body: JSON.stringify({
+        queryName: 'GetShippingFOBPoints'
+      })
+    });
+    return mapKeysToCamelCase(raw);
+  },
+
+  getDeliveryTermMaster: async (): Promise<any[]> => {
+    const raw = await apiFetch<any[]>('/SqlGateway/query', {
+      method: 'POST',
+      body: JSON.stringify({
+        queryName: 'GetDeliveryTermMaster'
+      })
+    });
+    return mapKeysToCamelCase(raw);
   }
-
-
 };

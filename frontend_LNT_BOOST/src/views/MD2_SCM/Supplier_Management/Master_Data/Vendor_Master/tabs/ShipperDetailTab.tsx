@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { Plus, Save, Trash2, RotateCw } from 'lucide-react';
 
 interface ShipperDetailTabProps {
   formData: any;
@@ -6,22 +7,620 @@ interface ShipperDetailTabProps {
   isEdit: boolean;
   onInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => void;
   shipperLocations: any[];
+  deliveryModes: any[];
+  shippingFOBPoints: any[];
+  shippingTerms: any[];
+  deliveryTerms: any[];
+  countries: any[];
+  onSaveLocation: (location: any) => Promise<void>;
+  onDeleteLocation: (locationID: number) => Promise<void>;
+  onReloadLocations?: (vendorID: string) => Promise<void>;
 }
+
+interface LocationFormState {
+  locationID?: number;
+  locationName: string;
+  contractPersonTitle: string;
+  contractPersonName: string;
+  contractPersonPosition: string;
+  addressLine1: string;
+  addressLine2: string;
+  city: string;
+  province: string;
+  postalcode: string;
+  countryID: string;
+  phoneNo: string;
+  fax: string;
+  email: string;
+  termOfDelivery: string;
+  portOfLoading: string;
+  defaultLocationflag: boolean;
+  activeflag: boolean;
+}
+
+const initialFormState: LocationFormState = {
+  locationName: '',
+  contractPersonTitle: 'Mr',
+  contractPersonName: '',
+  contractPersonPosition: '',
+  addressLine1: '',
+  addressLine2: '',
+  city: '',
+  province: '',
+  postalcode: '',
+  countryID: '',
+  phoneNo: '',
+  fax: '',
+  email: '',
+  termOfDelivery: '',
+  portOfLoading: '',
+  defaultLocationflag: false,
+  activeflag: true,
+};
 
 export default function ShipperDetailTab({
   formData,
   isView,
   isEdit,
   onInputChange,
-  shipperLocations = []
+  shipperLocations = [],
+  deliveryModes = [],
+  shippingFOBPoints = [],
+  shippingTerms = [],
+  deliveryTerms = [],
+  countries = [],
+  onSaveLocation,
+  onDeleteLocation,
+  onReloadLocations
 }: ShipperDetailTabProps) {
+
+  // Local state for the Location Input Form
+  const [locationForm, setLocationForm] = useState<LocationFormState>(initialFormState);
+
+  // Local states for the table filters
+  const [filterDeliveryTerm, setFilterDeliveryTerm] = useState<string>('All');
+  const [filterPortOfLoading, setFilterPortOfLoading] = useState<string>('');
+  const [filterDefault, setFilterDefault] = useState<string>('All');
+  const [filterActive, setFilterActive] = useState<string>('All');
+
+  // Handle local form input changes
+  const handleFormInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value, type } = e.target;
+    const val = type === 'checkbox' ? (e.target as HTMLInputElement).checked : value;
+    setLocationForm(prev => ({
+      ...prev,
+      [name]: val
+    }));
+  };
+
+  // Clear / Reset form
+  const handleClearForm = () => {
+    setLocationForm(initialFormState);
+  };
+
+  // Copy data from vendor general contact info
+  const handleCopyFromVendor = () => {
+    setLocationForm(prev => ({
+      ...prev,
+      locationName: formData.companyName || '',
+      contractPersonTitle: formData.contactSalutation || 'Mr',
+      contractPersonName: formData.contactPersonName || '',
+      contractPersonPosition: formData.contactInitials || '',
+      addressLine1: formData.addressLine1 || '',
+      addressLine2: formData.addressLine2 || '',
+      city: formData.city || '',
+      province: formData.province || '',
+      postalcode: formData.postalCode || '',
+      countryID: formData.country || '',
+      phoneNo: formData.phoneNo || '',
+      fax: formData.fax || '',
+      email: formData.contactEmail || '',
+    }));
+  };
+
+  // Click on table row to populate form for editing
+  const handleRowClick = (loc: any) => {
+    setLocationForm({
+      locationID: loc.locationID,
+      locationName: loc.locationName || '',
+      contractPersonTitle: loc.contractPersonTitle || 'Mr',
+      contractPersonName: loc.contractPersonName || '',
+      contractPersonPosition: loc.contractPersonPosition || '',
+      addressLine1: loc.addressLine1 || '',
+      addressLine2: loc.addressLine2 || '',
+      city: loc.city || '',
+      province: loc.province || '',
+      postalcode: loc.postalcode || '',
+      countryID: loc.countryID || '',
+      phoneNo: loc.phoneNo || '',
+      fax: loc.fax || '',
+      email: loc.email || '',
+      termOfDelivery: loc.termOfDelivery || '',
+      portOfLoading: loc.portOfLoading || '',
+      defaultLocationflag: !!loc.defaultLocationflag,
+      activeflag: !!loc.activeflag,
+    });
+  };
+
+  // Save/Update location
+  const handleSaveClick = async () => {
+    if (!locationForm.locationName.trim()) {
+      alert('Please enter Location Name.');
+      return;
+    }
+    if (!locationForm.addressLine1.trim()) {
+      alert('Please enter Address Line 1.');
+      return;
+    }
+    if (!locationForm.city.trim()) {
+      alert('Please enter City.');
+      return;
+    }
+    if (!locationForm.province.trim()) {
+      alert('Please enter Province.');
+      return;
+    }
+    if (!locationForm.countryID) {
+      alert('Please select Country.');
+      return;
+    }
+    if (!locationForm.phoneNo.trim()) {
+      alert('Please enter Phone No.');
+      return;
+    }
+
+    try {
+      await onSaveLocation(locationForm);
+      alert('Shipper location saved successfully!');
+      handleClearForm();
+    } catch (err: any) {
+      alert('Failed to save location: ' + err.message);
+    }
+  };
+
+  // Delete location
+  const handleDeleteClick = async () => {
+    if (!locationForm.locationID) return;
+    if (!window.confirm('Are you sure you want to delete this shipper location?')) return;
+    try {
+      await onDeleteLocation(locationForm.locationID);
+      alert('Shipper location deleted successfully!');
+      handleClearForm();
+    } catch (err: any) {
+      alert('Failed to delete location: ' + err.message);
+    }
+  };
+
+  // Refresh locations list
+  const handleRefresh = async () => {
+    if (onReloadLocations && formData.vendorID) {
+      try {
+        await onReloadLocations(formData.vendorID);
+        alert('Locations list refreshed!');
+      } catch (err: any) {
+        alert('Failed to refresh locations: ' + err.message);
+      }
+    }
+  };
+
+  // Filter local logic for display
+  const filteredLocations = shipperLocations.filter(loc => {
+    if (filterDeliveryTerm !== 'All' && loc.termOfDelivery !== filterDeliveryTerm) return false;
+    if (filterPortOfLoading && !loc.portOfLoading?.toLowerCase().includes(filterPortOfLoading.toLowerCase())) return false;
+
+    if (filterDefault === 'Yes' && !loc.defaultLocationflag) return false;
+    if (filterDefault === 'No' && loc.defaultLocationflag) return false;
+
+    if (filterActive === 'Yes' && !loc.activeflag) return false;
+    if (filterActive === 'No' && loc.activeflag) return false;
+
+    return true;
+  });
+
   return (
-    <div className="fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-      {/* PHẦN 1: SHIPPING INSTRUCTIONS */}
+    <div className="fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+
+      {/* MINI TOOLBAR */}
+      <div style={{
+        display: 'flex',
+        gap: '6px',
+        alignItems: 'center',
+        padding: '4px 10px',
+        border: '1px solid var(--border-color)',
+        borderRadius: '6px',
+        backgroundColor: 'var(--bg-secondary)'
+      }}>
+        <button
+          type="button"
+          onClick={handleClearForm}
+          disabled={isView}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: '28px',
+            height: '28px',
+            border: '1px solid var(--border-color)',
+            borderRadius: '4px',
+            backgroundColor: 'var(--bg-primary)',
+            cursor: isView ? 'not-allowed' : 'pointer'
+          }}
+          title="Create New Location"
+        >
+          <Plus size={14} />
+        </button>
+
+        <button
+          type="button"
+          onClick={handleSaveClick}
+          disabled={isView}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: '28px',
+            height: '28px',
+            border: '1px solid var(--border-color)',
+            borderRadius: '4px',
+            backgroundColor: 'var(--bg-primary)',
+            cursor: isView ? 'not-allowed' : 'pointer'
+          }}
+          title="Save Location"
+        >
+          <Save size={14} />
+        </button>
+
+        <button
+          type="button"
+          onClick={handleDeleteClick}
+          disabled={isView || !locationForm.locationID}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: '28px',
+            height: '28px',
+            border: '1px solid var(--border-color)',
+            borderRadius: '4px',
+            backgroundColor: 'var(--bg-primary)',
+            cursor: (isView || !locationForm.locationID) ? 'not-allowed' : 'pointer',
+            opacity: !locationForm.locationID ? 0.5 : 1
+          }}
+          title="Delete Location"
+        >
+          <Trash2 size={14} />
+        </button>
+
+        <button
+          type="button"
+          onClick={handleRefresh}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: '28px',
+            height: '28px',
+            border: '1px solid var(--border-color)',
+            borderRadius: '4px',
+            backgroundColor: 'var(--bg-primary)',
+            cursor: 'pointer'
+          }}
+          title="Refresh Locations"
+        >
+          <RotateCw size={14} />
+        </button>
+      </div>
+
+
+      {/* SHIPPER LOCATION CONTACT PANEL */}
+      <div style={{
+        border: '1px solid var(--border-color)',
+        borderRadius: '6px',
+        padding: '8px 12px',
+        backgroundColor: 'var(--bg-secondary)',
+        fontSize: '11px'
+      }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+          <div style={{ fontWeight: 'bold', color: 'var(--text-muted)' }}>Shipper Location Contact</div>
+          <div style={{ display: 'flex', gap: '6px' }}>
+            <button
+              type="button"
+              className="btn-secondary"
+              style={{ fontSize: '10.5px', padding: '2px 8px', height: '22px' }}
+              onClick={handleCopyFromVendor}
+              disabled={isView}
+            >
+              Copy from Vendor's Detail Contact
+            </button>
+            <button
+              type="button"
+              className="btn-secondary"
+              style={{ fontSize: '10.5px', padding: '2px 8px', height: '22px' }}
+              onClick={handleClearForm}
+              disabled={isView}
+            >
+              Clear Text
+            </button>
+          </div>
+        </div>
+
+        {/* TWO-COLUMN FORM LAYOUT */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+
+          {/* LEFT COLUMN: CONTACT DETAILS */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+
+            {/* ROW 1: Location ID & Location Name */}
+            <div style={{ display: 'grid', gridTemplateColumns: '100px 60px 1fr', alignItems: 'center', gap: '6px' }}>
+              <span style={{ fontWeight: 600 }}>Location ID</span>
+              <input
+                type="text"
+                value={locationForm.locationID ?? '0'}
+                disabled
+                className="erp-input"
+                style={{ height: '22px', fontSize: '11px', backgroundColor: 'var(--bg-tertiary)', textAlign: 'center' }}
+              />
+              <input
+                type="text"
+                name="locationName"
+                value={locationForm.locationName || ''}
+                onChange={handleFormInputChange}
+                className="erp-input"
+                disabled={isView}
+                placeholder="Location Name (Required)"
+                style={{ height: '22px', fontSize: '11px' }}
+                required
+              />
+            </div>
+
+            {/* ROW 2: Person Name (Salutation dropdown + First Name + Last Name/Position) */}
+            <div style={{ display: 'grid', gridTemplateColumns: '100px 60px 1fr 1fr', alignItems: 'center', gap: '6px' }}>
+              <span style={{ fontWeight: 600 }}>Person Name</span>
+              <select
+                name="contractPersonTitle"
+                value={locationForm.contractPersonTitle || 'Mr'}
+                onChange={handleFormInputChange}
+                className="erp-select"
+                disabled={isView}
+                style={{ height: '22px', fontSize: '11px', padding: '2px' }}
+              >
+                <option value="Mr">Mr</option>
+                <option value="Ms">Ms</option>
+                <option value="Mrs">Mrs</option>
+              </select>
+              <input
+                type="text"
+                name="contractPersonName"
+                value={locationForm.contractPersonName || ''}
+                onChange={handleFormInputChange}
+                className="erp-input"
+                disabled={isView}
+                placeholder="Name"
+                style={{ height: '22px', fontSize: '11px' }}
+              />
+              <input
+                type="text"
+                name="contractPersonPosition"
+                value={locationForm.contractPersonPosition || ''}
+                onChange={handleFormInputChange}
+                className="erp-input"
+                disabled={isView}
+                placeholder="Position"
+                style={{ height: '22px', fontSize: '11px' }}
+              />
+            </div>
+
+            {/* ROW 3: Phone No. & Fax */}
+            <div style={{ display: 'grid', gridTemplateColumns: '100px 1fr 30px 1fr', alignItems: 'center', gap: '6px' }}>
+              <span style={{ fontWeight: 600 }}>Phone No.</span>
+              <input
+                type="text"
+                name="phoneNo"
+                value={locationForm.phoneNo || ''}
+                onChange={handleFormInputChange}
+                className="erp-input"
+                disabled={isView}
+                placeholder="Phone No (Required)"
+                style={{ height: '22px', fontSize: '11px' }}
+                required
+              />
+              <span style={{ fontWeight: 600, textAlign: 'right' }}>Fax</span>
+              <input
+                type="text"
+                name="fax"
+                value={locationForm.fax || ''}
+                onChange={handleFormInputChange}
+                className="erp-input"
+                disabled={isView}
+                placeholder="Fax"
+                style={{ height: '22px', fontSize: '11px' }}
+              />
+            </div>
+
+            {/* ROW 4: Email */}
+            <div style={{ display: 'grid', gridTemplateColumns: '100px 1fr', alignItems: 'center', gap: '6px' }}>
+              <span style={{ fontWeight: 600 }}>Email</span>
+              <input
+                type="email"
+                name="email"
+                value={locationForm.email || ''}
+                onChange={handleFormInputChange}
+                className="erp-input"
+                disabled={isView}
+                placeholder="Email address"
+                style={{ height: '22px', fontSize: '11px' }}
+              />
+            </div>
+          </div>
+
+          {/* RIGHT COLUMN: ADDRESS DETAILS */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+
+            {/* ROW 1: Address Line 1 */}
+            <div style={{ display: 'grid', gridTemplateColumns: '100px 1fr', alignItems: 'center', gap: '6px' }}>
+              <span style={{ fontWeight: 600 }}>Address Line 1</span>
+              <input
+                type="text"
+                name="addressLine1"
+                value={locationForm.addressLine1 || ''}
+                onChange={handleFormInputChange}
+                className="erp-input"
+                disabled={isView}
+                placeholder="Address Line 1 (Required)"
+                style={{ height: '22px', fontSize: '11px' }}
+                required
+              />
+            </div>
+
+            {/* ROW 2: Address Line 2 */}
+            <div style={{ display: 'grid', gridTemplateColumns: '100px 1fr', alignItems: 'center', gap: '6px' }}>
+              <span style={{ fontWeight: 600 }}>Address Line 2</span>
+              <input
+                type="text"
+                name="addressLine2"
+                value={locationForm.addressLine2 || ''}
+                onChange={handleFormInputChange}
+                className="erp-input"
+                disabled={isView}
+                placeholder="Address Line 2"
+                style={{ height: '22px', fontSize: '11px' }}
+              />
+            </div>
+
+            {/* ROW 3: City & Province */}
+            <div style={{ display: 'grid', gridTemplateColumns: '100px 1fr 60px 1fr', alignItems: 'center', gap: '6px' }}>
+              <span style={{ fontWeight: 600 }}>City</span>
+              <input
+                type="text"
+                name="city"
+                value={locationForm.city || ''}
+                onChange={handleFormInputChange}
+                className="erp-input"
+                disabled={isView}
+                placeholder="City (Required)"
+                style={{ height: '22px', fontSize: '11px' }}
+                required
+              />
+              <span style={{ fontWeight: 600, textAlign: 'right' }}>Province</span>
+              <input
+                type="text"
+                name="province"
+                value={locationForm.province || ''}
+                onChange={handleFormInputChange}
+                className="erp-input"
+                disabled={isView}
+                placeholder="Province (Required)"
+                style={{ height: '22px', fontSize: '11px' }}
+                required
+              />
+            </div>
+
+            {/* ROW 4: Country & Postal Code */}
+            <div style={{ display: 'grid', gridTemplateColumns: '100px 1fr 70px 1fr', alignItems: 'center', gap: '6px' }}>
+              <span style={{ fontWeight: 600 }}>Country</span>
+              <select
+                name="countryID"
+                value={locationForm.countryID || ''}
+                onChange={handleFormInputChange}
+                className="erp-select"
+                disabled={isView}
+                style={{ height: '22px', fontSize: '11px', padding: '2px' }}
+              >
+                <option value="">-- Select --</option>
+                {countries.map(c => (
+                  <option key={c.countryID} value={c.countryID}>
+                    {c.countryName}
+                  </option>
+                ))}
+              </select>
+              <span style={{ fontWeight: 600, textAlign: 'right' }}>Postal code</span>
+              <input
+                type="text"
+                name="postalcode"
+                value={locationForm.postalcode || ''}
+                onChange={handleFormInputChange}
+                className="erp-input"
+                disabled={isView}
+                placeholder="Postal code"
+                style={{ height: '22px', fontSize: '11px' }}
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* LOGISTICS & STATUS ROW */}
+      <div style={{
+        display: 'flex',
+        flexWrap: 'wrap',
+        gap: '24px',
+        alignItems: 'center',
+        padding: '4px 12px',
+        fontSize: '11px',
+        border: '1px solid var(--border-color)',
+        borderRadius: '6px',
+        backgroundColor: 'var(--bg-secondary)'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <span style={{ fontWeight: 600 }}>Term Of Delivery</span>
+          <select
+            name="termOfDelivery"
+            value={locationForm.termOfDelivery || ''}
+            onChange={handleFormInputChange}
+            className="erp-select"
+            disabled={isView}
+            style={{ width: '150px', height: '22px', fontSize: '11px' }}
+          >
+            <option value="">-- Select --</option>
+            {deliveryTerms.map(dt => (
+              <option key={dt.deliveryTermCode} value={dt.deliveryTermCode}>
+                {dt.deliveryTermCode} - {dt.description}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <span style={{ fontWeight: 600 }}>Port Of Loading</span>
+          <input
+            type="text"
+            name="portOfLoading"
+            value={locationForm.portOfLoading || ''}
+            onChange={handleFormInputChange}
+            className="erp-input"
+            disabled={isView}
+            placeholder="Port Of Loading"
+            style={{ width: '180px', height: '22px', fontSize: '11px' }}
+          />
+        </div>
+
+        <label className="checkbox-container" style={{ display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer', margin: 0 }}>
+          <input
+            type="checkbox"
+            name="defaultLocationflag"
+            checked={locationForm.defaultLocationflag}
+            onChange={handleFormInputChange}
+            disabled={isView}
+          />
+          <span style={{ fontWeight: 600 }}>Is Default Location</span>
+        </label>
+
+        <label className="checkbox-container" style={{ display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer', margin: 0 }}>
+          <input
+            type="checkbox"
+            name="activeflag"
+            checked={locationForm.activeflag}
+            onChange={handleFormInputChange}
+            disabled={isView}
+          />
+          <span style={{ fontWeight: 600 }}>Active Flag</span>
+        </label>
+      </div>
+
+      {/* SECTION 1: SHIPPING INSTRUCTIONS */}
       <div className="erp-card" style={{ maxWidth: '450px', padding: '12px' }}>
         <h4 className="erp-card-title">Shipping Instructions</h4>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-
           <div style={{ display: 'grid', gridTemplateColumns: '120px 1fr', alignItems: 'center', gap: '8px' }}>
             <label style={{ fontSize: '11px', fontWeight: 600 }}>Shipping Terms</label>
             <select
@@ -31,8 +630,12 @@ export default function ShipperDetailTab({
               disabled={isView}
               className="erp-select"
             >
-              <option value="Free On Board">Free On Board</option>
-              <option value="Cost and Freight">Cost and Freight</option>
+              <option value="">-- Select Shipping Term --</option>
+              {shippingTerms.map((term) => (
+                <option key={term.shippingTermCode} value={term.shippingTermCode}>
+                  {term.description}
+                </option>
+              ))}
             </select>
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: '120px 1fr', alignItems: 'center', gap: '8px' }}>
@@ -44,8 +647,12 @@ export default function ShipperDetailTab({
               disabled={isView}
               className="erp-select"
             >
-              <option value="Sea Shipment">Sea Shipment</option>
-              <option value="Air Shipment">Air Shipment</option>
+              <option value="">-- Select Delivery Mode --</option>
+              {deliveryModes.map((dMode) => (
+                <option key={dMode.deliveryModeCode} value={dMode.deliveryModeCode}>
+                  {dMode.description}
+                </option>
+              ))}
             </select>
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: '120px 1fr', alignItems: 'center', gap: '8px' }}>
@@ -57,26 +664,109 @@ export default function ShipperDetailTab({
               disabled={isView}
               className="erp-select"
             >
-              <option value="Port">Port</option>
-              <option value="Factory">Factory</option>
+              <option value="">-- Select FOB Point --</option>
+              {shippingFOBPoints.map((fob) => (
+                <option key={fob.fobPointCode} value={fob.fobPointCode}>
+                  {fob.description}
+                </option>
+              ))}
             </select>
           </div>
         </div>
       </div>
-      {/* PHẦN 2: SHIPPER LOCATION */}
+
+      {/* SECTION 3: SHIPPER LOCATION LIST */}
       <div className="erp-card" style={{ padding: '12px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-          <h4 className="erp-card-title" style={{ margin: 0, border: 'none' }}>Shipper Location</h4>
-          <button
-            type="button"
-            className="btn-secondary"
-            disabled={isView}
-            style={{ height: '24px', fontSize: '11px', padding: '0 8px' }}
-            onClick={() => {/* Mở Form/Popup nhập location mới */ }}
-          >
-            Add Shipper Location
-          </button>
+        <h4 className="erp-card-title" style={{ margin: '0 0 10px 0', border: 'none' }}>Shipper Locations List</h4>
+
+        {/* FILTERS */}
+        <div style={{
+          display: 'flex',
+          flexWrap: 'wrap',
+          gap: '12px',
+          alignItems: 'center',
+          padding: '8px 12px',
+          backgroundColor: 'var(--bg-tertiary)',
+          border: '1px solid var(--border-color)',
+          borderRadius: '6px',
+          marginBottom: '10px'
+        }}>
+          <span style={{ fontSize: '11.5px', fontWeight: 600, color: 'var(--text-muted)' }}>Filters:</span>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <label style={{ fontSize: '11px', fontWeight: 600 }}>Delivery Term</label>
+            <select
+              value={filterDeliveryTerm}
+              onChange={(e) => setFilterDeliveryTerm(e.target.value)}
+              className="erp-select"
+              style={{ width: '130px', height: '24px', padding: '2px 4px', fontSize: '11px' }}
+            >
+              <option value="All">All</option>
+              {deliveryTerms.map(dt => (
+                <option key={dt.deliveryTermCode} value={dt.deliveryTermCode}>
+                  {dt.deliveryTermCode} - {dt.description}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <label style={{ fontSize: '11px', fontWeight: 600 }}>Port of Loading</label>
+            <input
+              type="text"
+              value={filterPortOfLoading}
+              onChange={(e) => setFilterPortOfLoading(e.target.value)}
+              className="erp-input"
+              style={{ width: '130px', height: '24px', padding: '2px 4px', fontSize: '11px' }}
+              placeholder="Search Port..."
+            />
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <label style={{ fontSize: '11px', fontWeight: 600 }}>Default</label>
+            <select
+              value={filterDefault}
+              onChange={(e) => setFilterDefault(e.target.value)}
+              className="erp-select"
+              style={{ width: '100px', height: '24px', padding: '2px 4px', fontSize: '11px' }}
+            >
+              <option value="All">All</option>
+              <option value="Yes">Yes</option>
+              <option value="No">No</option>
+            </select>
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <label style={{ fontSize: '11px', fontWeight: 600 }}>Active</label>
+            <select
+              value={filterActive}
+              onChange={(e) => setFilterActive(e.target.value)}
+              className="erp-select"
+              style={{ width: '100px', height: '24px', padding: '2px 4px', fontSize: '11px' }}
+            >
+              <option value="All">All</option>
+              <option value="Yes">Yes</option>
+              <option value="No">No</option>
+            </select>
+          </div>
+
+          {(filterDeliveryTerm !== 'All' || filterPortOfLoading !== '' || filterDefault !== 'All' || filterActive !== 'All') && (
+            <button
+              type="button"
+              className="btn-secondary"
+              style={{ height: '24px', fontSize: '11px', padding: '0 8px', display: 'flex', alignItems: 'center' }}
+              onClick={() => {
+                setFilterDeliveryTerm('All');
+                setFilterPortOfLoading('');
+                setFilterDefault('All');
+                setFilterActive('All');
+              }}
+            >
+              Reset Filters
+            </button>
+          )}
         </div>
+
         {/* Bảng hiển thị danh sách địa điểm */}
         <div className="table-wrapper" style={{ overflowX: 'auto' }}>
           <table className="data-table" style={{ fontSize: '11.5px' }}>
@@ -103,36 +793,44 @@ export default function ShipperDetailTab({
               </tr>
             </thead>
             <tbody>
-              {shipperLocations.length === 0 ? (
+              {filteredLocations.length === 0 ? (
                 <tr>
                   <td colSpan={18} style={{ textAlign: 'center', padding: '16px', color: 'var(--text-muted)' }}>
-                    No locations registered
+                    No locations matching active filters
                   </td>
                 </tr>
               ) : (
-                shipperLocations.map((loc, idx) => (
-                  <tr key={loc.locationID || idx}>
-                    <td>{loc.locationID || idx + 1}</td>
-                    <td>{loc.locationName}</td>
-                    <td>{loc.personTitle}</td>
-                    <td>{loc.personName}</td>
-                    <td>{loc.position}</td>
+                filteredLocations.map((loc, idx) => (
+                  <tr
+                    key={loc.locationID || idx}
+                    onClick={() => handleRowClick(loc)}
+                    style={{
+                      cursor: 'pointer',
+                      backgroundColor: locationForm.locationID === loc.locationID ? 'var(--bg-tertiary)' : 'transparent'
+                    }}
+                    title="Click to edit location"
+                  >
+                    <td>{loc.locationID}</td>
+                    <td style={{ fontWeight: 600 }}>{loc.locationName}</td>
+                    <td>{loc.contractPersonTitle}</td>
+                    <td>{loc.contractPersonName}</td>
+                    <td>{loc.contractPersonPosition}</td>
                     <td>{loc.addressLine1}</td>
                     <td>{loc.addressLine2}</td>
                     <td>{loc.city}</td>
                     <td>{loc.province}</td>
-                    <td>{loc.postalCode}</td>
-                    <td>{loc.countryName}</td>
+                    <td>{loc.postalcode}</td>
+                    <td>{loc.countryName || loc.countryID}</td>
                     <td>{loc.phoneNo}</td>
                     <td>{loc.fax}</td>
                     <td>{loc.email}</td>
-                    <td>{loc.termOfDelivery}</td>
+                    <td>{loc.termOfDeliveryDesc || loc.termOfDelivery}</td>
                     <td>{loc.portOfLoading}</td>
                     <td style={{ textAlign: 'center' }}>
-                      <input type="checkbox" checked={loc.defaultLocationFlag} disabled />
+                      <input type="checkbox" checked={!!loc.defaultLocationflag} readOnly style={{ pointerEvents: 'none' }} />
                     </td>
                     <td style={{ textAlign: 'center' }}>
-                      <input type="checkbox" checked={loc.activeFlag} disabled />
+                      <input type="checkbox" checked={!!loc.activeflag} readOnly style={{ pointerEvents: 'none' }} />
                     </td>
                   </tr>
                 ))

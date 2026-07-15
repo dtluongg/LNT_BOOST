@@ -31,6 +31,13 @@ interface VendorFormViewProps {
   currencies: any[];
   paymentTypes: any[];
   shipperLocations: any[];
+  deliveryModes: any[];
+  shippingFOBPoints: any[];
+  shippingTerms: any[];
+  deliveryTerms: any[];
+  onSaveLocation: (location: any) => Promise<void>;
+  onDeleteLocation: (locationID: number) => Promise<void>;
+  onReloadLocations?: (vendorID: string) => Promise<void>;
 }
 
 export default function VendorFormView({
@@ -47,7 +54,14 @@ export default function VendorFormView({
   countries = [],
   currencies = [],
   paymentTypes = [],
-  shipperLocations = []
+  shipperLocations = [],
+  deliveryModes = [],
+  shippingFOBPoints = [],
+  shippingTerms = [],
+  deliveryTerms = [],
+  onSaveLocation,
+  onDeleteLocation,
+  onReloadLocations,
 }: VendorFormViewProps) {
   const isView = formMode === 'view';
   const isEdit = formMode === 'edit';
@@ -442,6 +456,14 @@ export default function VendorFormView({
             isEdit={isEdit}
             onInputChange={onInputChange}
             shipperLocations={shipperLocations}
+            deliveryModes={deliveryModes}
+            shippingFOBPoints={shippingFOBPoints}
+            shippingTerms={shippingTerms}
+            deliveryTerms={deliveryTerms}
+            countries={countries}
+            onSaveLocation={onSaveLocation}
+            onDeleteLocation={onDeleteLocation}
+            onReloadLocations={onReloadLocations}
           />
         )}
 
