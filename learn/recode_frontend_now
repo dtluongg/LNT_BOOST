@@ -1,0 +1,175 @@
+# Hướng Dẫn Chi Tiết Từng Bước Tự Xây Dựng Lại Frontend ERP Từ A-Z
+
+Tài liệu này là **cẩm nang thực hành** chi tiết từng bước. Sau khi bạn đã hiểu các khái niệm cơ bản, bạn chỉ cần mở tài liệu này ra và làm theo đúng thứ tự từ trên xuống dưới để xây dựng một dự án frontend giống hệt như dự án hiện tại của bạn.
+
+---
+
+## BẢN ĐỒ CÁC BƯỚC THỰC HIỆN
+
+```mermaid
+graph TD
+    B1[Bước 1: Khởi tạo & Cài đặt] --> B2[Bước 2: Thiết lập CSS & Styling]
+    B2 --> B3[Bước 3: Định nghĩa Kiểu Dữ Liệu]
+    B3 --> B4[Bước 4: Viết HTTP Client & JWT]
+    B4 --> B5[Bước 5: Cấu hình Routing & Bảo mật]
+    B5 --> B6[Bước 6: Thiết kế Layout ERP]
+    B6 --> B7[Bước 7: Viết luồng Auth & Đăng nhập]
+    B7 --> B8[Bước 8: Thực hành màn hình Vendor Master]
+    B8 --> B9[Bước 9: Build & Tối ưu hóa]
+```
+
+---
+
+## CHI TIẾT TỪNG BƯỚC HÀNH ĐỘNG
+
+### 🛠️ BƯỚC 1: Khởi tạo dự án & Cài đặt Thư viện
+1.  **Tạo thư mục dự án mới**: Mở terminal ở thư mục gốc của bạn và chạy lệnh sau để khởi tạo dự án với Vite, React và TypeScript:
+    ```bash
+    npm create vite@latest frontend_boost -- --template react-ts
+    ```
+2.  **Di chuyển vào thư mục mới và cài đặt thư viện**:
+    ```bash
+    cd frontend_boost
+    npm install
+    ```
+3.  **Cài đặt các thư viện bổ trợ**:
+    *   `react-router-dom`: Quản lý chuyển trang.
+    *   `lucide-react`: Bộ icon giao diện hiện đại (nút Close, Save, Edit, Database...).
+    ```bash
+    npm install react-router-dom lucide-react
+    ```
+
+---
+
+### 🎨 BƯỚC 2: Thiết lập CSS Core (Styling System)
+1.  **Dọn dẹp file mặc định**: Xóa các CSS mặc định trong `src/App.css` và `src/index.css`.
+2.  **Định nghĩa Color Tokens**: Mở file `src/index.css` và viết các CSS Variables để quản lý giao diện đồng bộ:
+    ```css
+    :root {
+      --primary-color: #2563eb;    /* Xanh lam chủ đạo */
+      --success-color: #10b981;    /* Xanh lá cho thông báo thành công */
+      --danger-color: #ef4444;     /* Đỏ cho nút xóa/lỗi */
+      --bg-app: #f8fafc;           /* Màu nền toàn ứng dụng */
+      --bg-card: #ffffff;          /* Màu nền các khung chứa thông tin */
+      --border-color: #e2e8f0;     /* Màu viền bảng, input */
+      --text-main: #0f172a;        /* Chữ đậm */
+      --text-muted: #64748b;       /* Chữ nhạt/chú thích */
+    }
+    ```
+3.  **Viết CSS cho các thành phần dùng chung**: Viết CSS cho các thẻ cơ bản như `table` (bảng dữ liệu), `button` (nút bấm), `.form-group` (ô nhập liệu). Việc này giúp bạn kiểm soát giao diện bằng CSS thuần mà không cần cài Tailwind phức tạp.
+
+---
+
+### 🗂️ BƯỚC 3: Định nghĩa Kiểu Dữ Liệu (TypeScript Types)
+1.  **Tạo file**: `src/types/index.ts`
+2.  **Mục đích**: Khai báo cấu trúc các đối tượng dữ liệu sẽ dùng trong hệ thống để tránh gõ sai tên cột.
+3.  **Nội dung cần viết**:
+    *   `interface User`: Cấu trúc thông tin tài khoản (username, fullName, token...).
+    *   `interface SiteDto`: Cấu trúc thông tin Chi nhánh/Site.
+    *   `interface ModuleDto`: Cấu trúc phân hệ (SCM, HR, MES...).
+    *   `interface MenuFunctionInfo`: Cấu trúc thông tin chức năng chi tiết.
+
+---
+
+### 🌐 BƯỚC 4: Viết lớp Kết nối API & Bảo mật JWT (HTTP Client)
+1.  **Tạo file**: `src/core/api/httpClient.ts`
+2.  **Nội dung cần viết**:
+    *   Hàm `apiFetch<T>(endpoint, options)` bọc ngoài hàm `fetch` của trình duyệt.
+    *   **Logic 1**: Tự động đọc token trong `localStorage` để chèn vào `headers: { Authorization: Bearer <token> }`.
+    *   **Logic 2 (Silent Refresh Token)**: Nếu API trả về `status === 401` (hết hạn đăng nhập):
+        *   Tự động gọi API `/auth/refresh` gửi kèm Refresh Token để lấy Access Token mới.
+        *   Lưu Access Token mới vào `localStorage`.
+        *   Thực hiện lại request bị lỗi trước đó và trả về kết quả cho UI.
+3.  **Tạo các file Entity API**:
+    *   `src/entities/auth/authApi.ts`: Chứa các hàm `login()`, `logout()`, `refreshToken()`.
+    *   `src/entities/user/userApi.ts`: Hàm lấy thông tin user.
+4.  **Gộp API dịch vụ**: Tạo `src/services/api.ts` gộp tất cả các API trên thành `apiService` để giao diện dễ gọi.
+
+---
+
+### 🛣️ BƯỚC 5: Cấu hình Định tuyến (Routing) & Bảo vệ Trang (Protected Routes)
+1.  **Tạo file bảo mật**: `src/components/ProtectedRoute.tsx`.
+    *   *Logic*: Kiểm tra xem có token trong `localStorage` chưa. Nếu chưa -> dùng `<Navigate to="/login" />` để chặn và đẩy về trang đăng nhập.
+    *   Kiểm tra xem user đã chọn Site chưa, nếu chưa -> đẩy về trang `/site-selection`.
+2.  **Cấu hình Router chính trong `src/App.tsx`**:
+    ```tsx
+    <BrowserRouter>
+      <Routes>
+        <Route path="/login" element={<LoginScreen />} />
+        <Route path="/site-selection" element={<SiteSelectionScreen />} />
+        
+        {/* Các Route cần đăng nhập mới vào được */}
+        <Route element={<ProtectedRoute />}>
+          <Route path="/" element={<LayoutERP />}>
+            <Route path="dashboard" element={<DashboardOverview />} />
+            <Route path="scm/vendor" element={<VendorMasterView />} />
+            <Route path="system/db/:tableId" element={<SystemDataViewWrapper />} />
+          </Route>
+        </Route>
+      </Routes>
+    </BrowserRouter>
+    ```
+
+---
+
+### 🏢 BƯỚC 6: Thiết kế Layout ERP (Khung Giao Diện Chung)
+1.  **Tạo file Header**: `src/layouts/Header.tsx`
+    *   Hiển thị Tên dự án, tên chi nhánh đang chọn, thông tin User đăng nhập và nút Đăng xuất.
+2.  **Tạo file Sidebar**: `src/layouts/Sidebar.tsx`
+    *   Nhận danh sách module được phân quyền từ DB.
+    *   Dùng hàm `.map()` để hiển thị danh sách Menu động (SCM, Finance, MES...).
+    *   Sử dụng CSS Flexbox để chia màn hình thành 2 cột: cột trái là Sidebar, cột phải là vùng chứa nội dung trang (`<Outlet />` của React Router).
+
+---
+
+### 🔑 BƯỚC 7: Xây dựng các trang Đăng Nhập & Chọn Chi Nhánh
+1.  **Viết trang Đăng nhập**: `src/features/auth/LoginScreen.tsx`
+    *   Tạo form nhập Username/Password.
+    *   Quản lý State `loading` (hiển thị spinner khi đang gửi yêu cầu) và `error` (thông báo sai tài khoản).
+    *   Gọi `apiService.login()`, lưu token vào `localStorage`, và chuyển hướng sang trang chọn Site.
+2.  **Viết trang Chọn Chi nhánh**: `src/features/auth/SiteSelectionScreen.tsx`
+    *   Hiển thị danh sách các Site mà User đó được quyền truy cập.
+    *   Khi chọn 1 Site -> Lưu ID Site vào `localStorage` -> Chuyển hướng vào trang chủ Dashboard.
+
+---
+
+### 📦 BƯỚC 8: Thực hành Màn hình Nghiệp vụ - Vendor Master
+Đây là bước thực hành lớn nhất để áp dụng mọi kiến thức:
+1.  **Tạo thư mục module**: `src/views/MD2_SCM/Supplier_Management/Master_Data/Vendor_Master/`
+2.  **Tạo file API cục bộ**: `vendorApi.ts`
+    *   Viết các hàm gọi `/SqlGateway/query` kèm theo tên câu lệnh SQL (GetVendors, CreateVendor, UpdateVendor...).
+    *   Viết hàm `mapKeysToCamelCase` để chuẩn hóa các cột SQL trả về thành dạng chữ thường camelCase.
+3.  **Viết file View danh sách**: `VendorMasterView.tsx`
+    *   Dùng `useEffect` gọi API load danh sách nhà cung cấp.
+    *   Hiển thị danh sách lên thẻ `<table>` với các nút Thêm, Sửa, Xóa.
+4.  **Viết file Form chi tiết**: `VendorFormView.tsx`
+    *   Tạo State `formData` để quản lý toàn bộ dữ liệu của Form.
+    *   Thiết kế giao diện chia Tab:
+        *   Tab 1: *General Info* (Thông tin chung).
+        *   Tab 2: *Shipper Detail* (Địa điểm giao hàng).
+5.  **Viết Tab con & Popup**:
+    *   `GeneralInfoTab.tsx`: Các ô nhập liệu cơ bản.
+    *   `ShipperDetailTab.tsx`: Chứa bảng danh sách địa điểm giao hàng của vendor đó.
+    *   `shipperDetailb_popup.tsx`: Component Modal hiển thị đè lên màn hình khi bấm nút "Thêm địa điểm". Load các dropdown động (Hình thức vận chuyển, điều khoản giao hàng) từ database để người dùng chọn.
+
+---
+
+### 🚀 BƯỚC 9: Phân tách mã nguồn (Lazy Loading) & Build
+1.  **Tách nhỏ file để tăng tốc độ tải**: Trong `src/App.tsx`, thay vì import trực tiếp, hãy dùng `lazy`:
+    ```typescript
+    const VendorMasterView = lazy(() => import('./views/MD2_SCM/.../VendorMasterView'));
+    ```
+    Bọc các Route trong thẻ `<Suspense fallback={<LoadingSpinner />}>` để hiển thị màn hình chờ khi trình duyệt đang tải file.
+2.  **Build sản phẩm thử nghiệm**: Chạy lệnh build để TypeScript kiểm tra toàn bộ lỗi code:
+    ```bash
+    npm run build
+    ```
+    Nếu build thành công không lỗi, dự án của bạn đã sẵn sàng hoạt động!
+
+---
+
+## User Review Required
+
+> [!IMPORTANT]
+> **Quyết định bắt đầu**:
+> Bạn đã nắm vững các bước triển khai chưa? Chúng ta sẽ bắt đầu bằng **Bước 1**: Khởi tạo dự án song song `frontend_boost` ngay bây giờ.
