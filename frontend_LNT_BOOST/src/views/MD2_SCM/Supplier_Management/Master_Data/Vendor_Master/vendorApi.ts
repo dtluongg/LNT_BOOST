@@ -108,10 +108,10 @@ export const vendorApi = {
           RemittanceContactPersonPhoneNo1: vendor.remitPhone1,
           RemittanceContactPersonPhoneNo2: vendor.remitPhone2,
           RemittanceContactPersonEmail: vendor.remitEmail,
-          ActiveFlag: vendor.activeFlag ? 1 : 0,
-          DefaultShippingTermCode: vendor.shippingTerms,
-          DefaultDeliveryModeCode: vendor.deliveryMode,
-          FOBPointCode: vendor.fobPoint
+          ActiveFlag: vendor.activeFlag ? 1 : 0
+          // DefaultShippingTermCode: vendor.shippingTerms,
+          // DefaultDeliveryModeCode: vendor.deliveryMode,
+          // FOBPointCode: vendor.fobPoint
         }
       })
     });
